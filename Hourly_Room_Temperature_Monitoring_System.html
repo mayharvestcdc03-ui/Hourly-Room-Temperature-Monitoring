@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hourly Room Temperature Monitoring System</title>
+<style>
+:root{--navy:#12304a;--blue:#176b87;--teal:#168b82;--bg:#f3f6f9;--line:#dce4eb;--ink:#203040;--muted:#647789;--red:#c0392b;--amber:#b9770e;--green:#16804a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.45 "Segoe UI",Arial,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,var(--navy),var(--blue));color:white;padding:22px 26px}
+header h1{margin:0;font-size:23px}header p{margin:5px 0 0;color:#d9eaf2}
+.wrap{max-width:1450px;margin:20px auto;padding:0 18px}.toolbar,.panel{background:white;border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px;box-shadow:0 3px 12px #1a38500b}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.toolbar strong{margin-right:auto;font-size:16px}
+button{border:0;border-radius:8px;padding:10px 14px;font-weight:650;cursor:pointer;background:var(--blue);color:white}button.secondary{background:#e8eef3;color:var(--navy)}button.success{background:var(--green)}button.danger{background:var(--red)}button:disabled{opacity:.45;cursor:not-allowed}
+h2{font-size:17px;margin:0 0 14px;color:var(--navy)}h3{font-size:14px;margin:0 0 10px;color:var(--navy)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:13px}.field{display:flex;flex-direction:column;gap:5px}.field.wide{grid-column:span 2}label{font-size:12px;font-weight:700;color:#506273}
+input,select,textarea{width:100%;border:1px solid #cbd6df;border-radius:7px;padding:10px;background:#fff;color:var(--ink);font:inherit;min-height:39px}input:focus,select:focus,textarea:focus{outline:2px solid #8bc4d3;border-color:var(--blue)}
+small,.hint{color:var(--muted);font-size:11px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.status{display:inline-block;padding:4px 8px;border-radius:20px;font-size:11px;font-weight:750}.ok{background:#e3f5eb;color:#12643b}.bad{background:#fde9e7;color:#a42b21}.pending{background:#fff2d8;color:#885600}.neutral{background:#eaf0f5;color:#526575}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}.metric{background:white;border:1px solid var(--line);border-radius:10px;padding:14px}.metric b{display:block;font-size:23px;color:var(--navy)}.metric span{color:var(--muted);font-size:12px}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:980px}th,td{padding:10px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:12px;vertical-align:middle}th{background:#f5f8fa;color:#506273;position:sticky;top:0;z-index:1}td .status{white-space:nowrap}
+.filters{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.hidden{display:none!important}.notice{padding:10px 12px;border-radius:8px;background:#eef6fa;color:#31576b;margin:10px 0;font-size:12px}.alert{background:#fff0ed;color:#96382c}.good{background:#eaf7ef;color:#17643b}
+.sheet{min-width:0;width:max-content;border:1px solid #555;border-collapse:collapse}.sheet th,.sheet td{border:1px solid #777;padding:5px 6px;text-align:center;font-size:11px;position:static;vertical-align:middle}.sheet th{background:#f5f8fa;color:#203040}.sheet .sheettitle{font-size:14px;letter-spacing:1.5px;padding:7px}
+.sheet .c1,.sheet .c2{position:sticky;background:#fff;z-index:2}.sheet th.c1,.sheet th.c2{background:#f5f8fa;z-index:3}.sheet .c1{left:0;min-width:200px;max-width:200px;text-align:left}.sheet .c2{left:200px;min-width:125px;max-width:125px;white-space:nowrap}.sheet td.room{font-weight:600}
+.sheet td.cell{min-width:62px;height:34px}.sheet .rd{cursor:pointer;border-radius:4px;padding:1px 3px;margin:1px 0}.sheet .rd:hover{background:#e6f1f6}.sheet .rd .t{font-weight:700;font-size:12px}.sheet .rd .tm{font-size:11px;font-weight:600;color:#203040}.sheet .rd.dev{background:#fde9e7;color:#a42b21}.sheet .rd.dev .tm{color:#a42b21}
+.sigpad{display:block;width:100%;max-width:520px;height:150px;border:1.5px dashed #8aa0ad;border-radius:8px;background:#fff;touch-action:none;margin:8px 0}.sigrow{display:flex;gap:28px;flex-wrap:wrap;margin-top:16px}.sigrow>div{width:220px}.sigrow img{display:block;width:220px;height:80px;object-fit:contain;border-bottom:1px solid #333}.sigrow .blank{height:80px;border-bottom:1px solid #333}.sigrow p{margin:4px 0;font-size:12px}.sigrow .rm{font-size:11px;padding:2px 8px;margin-top:2px}
+.sheetbar{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}.sheetbar .field{min-width:180px}.legend{font-size:11px;color:var(--muted)}.legend b{display:inline-block;width:12px;height:12px;background:#fde9e7;border:1px solid #a42b21;border-radius:3px;vertical-align:-2px;margin-right:4px}
+@page{size:landscape;margin:8mm}
+@media print{body.psc .signctl,body.psc .noprint{display:none!important}}
+@media print{body.ps{background:#fff}body.ps header,body.ps .toolbar,body.ps .cards,body.ps footer,body.ps .sheetbar,body.ps .signctl,body.ps .noprint,body.ps #records>*:not(#sheetBlock){display:none!important}body.ps .wrap{max-width:none;margin:0;padding:0}body.ps #records{border:0;box-shadow:none;padding:0}body.ps .tablewrap{overflow:visible}body.ps .sheet{width:100%;font-size:8px}body.ps .sheet th,body.ps .sheet td{font-size:8px;padding:2px 3px}body.ps .sheet .c1,body.ps .sheet .c2{position:static;min-width:0;max-width:none}body.ps .sheet td.cell{min-width:0}}
+@media print{body.psc{background:#fff}body.psc header,body.psc .toolbar,body.psc .cards,body.psc footer,body.psc .sheetbar,body.psc #counter>*:not(#counterSheetBlock){display:none!important}body.psc .wrap{max-width:none;margin:0;padding:0}body.psc #counter{border:0;box-shadow:none;padding:0}body.psc .tablewrap{overflow:visible}body.psc .sheet{width:100%;font-size:8px}body.psc .sheet th,body.psc .sheet td{font-size:8px;padding:2px 3px}body.psc .sheet .c1,body.psc .sheet .c2{position:static;min-width:0;max-width:none}body.psc .sheet td.cell{min-width:0}}
+footer{text-align:center;color:#7b8b98;font-size:11px;padding:12px}
+@media(max-width:900px){.grid,.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.grid,.filters{grid-template-columns:1fr}.field.wide{grid-column:span 1}.cards{grid-template-columns:repeat(2,1fr)}header{padding:18px}.wrap{padding:0 10px}}
+
+.monitor-counter-wrap{display:flex;align-items:center;gap:12px;min-width:220px}
+.monitor-counter-wrap .monitor-info{min-width:90px}
+.counter-sign-display{border-left:1px solid var(--line);padding-left:10px;min-width:105px}
+.counter-sign-display img{display:block;width:88px;height:30px;object-fit:contain;background:#fff;border:1px solid #d8dee6;border-radius:4px;margin-top:3px}
+.counter-sign-display small{display:block;color:var(--muted);font-size:10px}
+
+/* ===== Room list entry ===== */
+.clockbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 14px;color:var(--muted);font-size:12px}
+.clockbar b{font-variant-numeric:tabular-nums;color:var(--navy);font-size:14px}
+.rooms{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:8px}
+.rl-head,.rl-row{display:grid;grid-template-columns:36px minmax(190px,1.7fr) minmax(150px,1.1fr) minmax(175px,1.1fr) minmax(125px,.8fr) minmax(120px,.8fr);gap:10px;align-items:center;padding:9px 12px}
+.rl-head{background:#f5f8fa;font-size:11px;font-weight:700;color:#506273}
+.rl-row{border-top:1px solid var(--line);transition:background .2s}
+.rl-row.filled{background:#f4fafc}.rl-row.dev{background:#fff4f1}.rl-row.locked{background:#f1f4f7}
+.rl-no{color:var(--muted);font-weight:700;text-align:center}
+.rl-room{font-weight:700;color:var(--navy)}
+.rl-std{font-size:12px;color:#34495a}
+.tempbox{display:flex;gap:6px}
+.tin{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+.tin:disabled{background:#eef2f5;color:#34495a}
+.signbtn{padding:0 12px;min-height:39px;background:#e8eef3;color:var(--navy);font-size:15px}
+.rl-time{font-size:12px;line-height:1.3;visibility:hidden}
+.rl-time.on{visibility:visible;animation:rlfade .25s ease-out}
+.rl-time b{display:block;font-size:14px;font-variant-numeric:tabular-nums;color:var(--navy)}
+.rl-time small{display:block}
+.rl-rem{grid-column:2 / -1}
+@keyframes rlfade{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.rl-time.on{animation:none}}
+@media(max-width:760px){
+ .rl-head{display:none}
+ .rl-row{grid-template-columns:30px 1fr 1fr;row-gap:8px}
+ .rl-room{grid-column:2 / -1}.rl-std{grid-column:2 / -1}.rl-temp{grid-column:1 / -1}
+ .rl-time{grid-column:1 / 3}.rl-stat{grid-column:3;text-align:right}.rl-rem{grid-column:1 / -1}
+}
+
+/* ===== Counter check room list ===== */
+.rl-head.crl,.rl-row.crl-row{grid-template-columns:36px minmax(170px,1.5fr) minmax(125px,1fr) minmax(190px,1.2fr) minmax(165px,1.1fr) minmax(105px,.7fr) minmax(130px,.8fr)}
+.rl-mon{font-size:12px;line-height:1.3;color:#34495a}
+.rl-mon b{font-size:14px;color:var(--navy);font-variant-numeric:tabular-nums}
+.rl-mon small{display:block}
+.rl-stat small{display:block;margin-top:3px}
+@media(max-width:760px){
+ .rl-row.crl-row{grid-template-columns:30px 1fr 1fr}
+ .rl-row.crl-row .rl-mon{grid-column:2 / -1}
+}
+</style>
+</head>
+<body>
+<header><h1>Hourly Room Temperature Monitoring System</h1><p>Cold Storage • Holding Rooms • Blast Freezing • Production Support Areas | Automatic date and time capture</p></header>
+<div class="wrap">
+ <div class="toolbar"><strong>Monitoring Dashboard</strong><button class="secondary" onclick="showTab('entry')">New Monitoring Entry</button><button class="secondary" onclick="showTab('records')">Monitoring Records</button><button class="secondary" onclick="showTab('counter')">Counter Check</button><button class="secondary" onclick="showTab('verify')">Verification</button><button class="secondary" onclick="exportCSV()">Export CSV</button><button class="danger" onclick="resetAllRecords()">Reset All Records</button></div>
+ <section id="dashboard">
+  <div class="cards">
+   <div class="metric"><b id="totalCount">0</b><span>Total monitoring entries</span></div>
+   <div class="metric"><b id="compliantCount">0</b><span>Within temperature standard</span></div>
+   <div class="metric"><b id="deviationCount">0</b><span>Temperature deviations</span></div>
+   <div class="metric"><b id="pendingCount">0</b><span>Awaiting verification</span></div>
+  </div>
+ </section>
+ <section id="entry" class="panel">
+  <h2>1. Hourly Monitoring Data Entry</h2>
+  <div class="notice">Fill in the details below, then type the reading beside each room. The &deg;C is added automatically, so just type the number (use the &plusmn; button for negative readings). The time is captured the moment you enter a reading. Only one record is allowed per room per hour and date. Records are saved in this browser on this device.</div>
+  <form id="entryForm">
+   <div class="grid">
+    <div class="field"><label for="monitor">PERSON WHO MONITORS *</label><select id="monitor" required><option value="">Select personnel</option></select></div>
+    <div class="field"><label for="shift">SHIFT *</label><select id="shift" required><option value="">Select shift</option><option value="Day Shift">Day Shift (5:00 AM &ndash; 2:00 PM)</option><option value="Mid Shift">Mid Shift (1:00 PM &ndash; 10:00 PM)</option><option value="Night Shift">Night Shift (9:00 PM &ndash; 6:00 AM)</option></select></div>
+    <div class="field"><label for="thermo">THERMOMETER ITEM CODE *</label><input id="thermo" placeholder="Enter item code" required></div>
+    <div class="field"><label for="calibration">CALIBRATION DATE *</label><input type="date" id="calibration" required></div>
+   </div>
+   <h3 style="margin-top:22px">Rooms / Areas to Monitor</h3>
+   <div class="clockbar">Current date and time: <b id="liveClock">--</b></div>
+   <div class="rooms">
+    <div class="rl-head"><div>#</div><div>ROOM / AREA</div><div>STANDARD</div><div>ACTUAL TEMPERATURE</div><div>TIME RECORDED</div><div>STATUS</div></div>
+    <div id="roomRows"></div>
+   </div>
+   <div id="assessment" class="notice">Type a reading beside any room. Its status and time will appear here and in the row.</div>
+   <div class="actions"><button type="submit">Save Monitoring Records</button><button type="reset" class="secondary" onclick="setTimeout(resetAssessment,0)">Clear Form</button></div>
+  </form>
+ </section>
+ <section id="records" class="panel hidden">
+  <h2>2. Monitoring Records</h2>
+  <div id="sheetBlock">
+   <div class="sheetbar"><div class="field"><label for="sheetDate">MONITORING DATE</label><input type="date" id="sheetDate"></div><div class="field"><label for="sheetShift">SHIFT</label><select id="sheetShift"><option value="Day Shift">Day Shift (5:00 AM – 2:00 PM)</option><option value="Mid Shift">Mid Shift (1:00 PM – 10:00 PM)</option><option value="Night Shift">Night Shift (9:00 PM – 6:00 AM)</option></select></div><button class="secondary" onclick="printSheet()">Print Sheet</button><span class="legend"><b></b>Out of temperature standard • Tap a reading to view its details</span></div>
+   <div class="tablewrap"><table id="sheetTable" class="sheet"></table></div>
+   <div id="sheetSigs" class="sigrow"></div>
+   <div class="signctl">
+    <h3 id="sigTitle" style="margin-top:18px">Sign Monitoring Sheet</h3>
+    <div class="grid"><div class="field"><label for="sigName">MONITORED BY *</label><select id="sigName"></select></div></div>
+    <canvas id="sigPad" class="sigpad" aria-label="Draw signature"></canvas>
+    <div class="actions"><button type="button" onclick="saveSheetSig()">Sign &amp; Save</button><button type="button" class="secondary" onclick="clearSheetPad()">Clear Signature</button></div>
+    <div class="legend">Only monitors who have a record on this shift and date can sign. The signature appears under the sheet above. The OIC/PLI counter check signature appears beside it.</div>
+   </div>
+  </div>
+  <h3 style="margin-top:26px">Detailed Records</h3>
+  <div class="filters">
+   <div class="field"><label>FILTER BY DATE</label><input type="date" id="filterDate"></div>
+   <div class="field"><label>FILTER BY AREA</label><select id="filterArea"><option value="">All areas</option></select></div>
+   <div class="field"><label>FILTER BY STATUS</label><select id="filterStatus"><option value="">All statuses</option><option>Compliant</option><option>Deviation</option><option>Pending Verification</option><option>Verified</option><option>Rejected</option></select></div>
+   <div class="field"><label>SEARCH PERSON / ITEM CODE</label><input id="searchText" placeholder="Search..."></div>
+  </div>
+  <div class="tablewrap"><table><thead><tr><th>Date / Time</th><th>Area</th><th>Actual °C</th><th>Standard</th><th>PLI Monitor / OIC-PLI Counter Check</th><th>Thermometer / Calibration</th><th>Assessment</th><th>Verification</th><th>Action</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
+ </section>
+ <section id="counter" class="panel hidden">
+  <h2>3. Counter Checking (per Area)</h2>
+  <div class="notice">Counter checking is an independent check of the room temperature. The counter checker reads the temperature of the area using his/her own thermometer, and the system compares it with the latest hourly monitoring reading of the same area. A difference of more than <b id="tolText"></b> is flagged as a discrepancy. The counter checker must be a different person from the one who monitored. Fill in the details, then type the counter check reading beside each room &ndash; the &deg;C and the time are added automatically. Everything is saved right here in the app; nothing needs to be downloaded.</div>
+  <h3 id="counterFormTitle" style="margin-top:22px">New Counter Check</h3>
+  <form id="counterForm">
+   <div class="grid">
+    <div class="field"><label for="cChecker">COUNTER CHECKED BY *</label><input id="cChecker" list="cPeople" placeholder="Enter complete name" required><datalist id="cPeople"></datalist></div>
+    <div class="field"><label for="cShift">SHIFT *</label><select id="cShift" required><option value="">Select shift</option><option value="Day Shift">Day Shift (5:00 AM – 2:00 PM)</option><option value="Mid Shift">Mid Shift (1:00 PM – 10:00 PM)</option><option value="Night Shift">Night Shift (9:00 PM – 6:00 AM)</option></select></div>
+    <div class="field"><label for="cThermo">THERMOMETER ITEM CODE *</label><input id="cThermo" placeholder="Enter item code" required></div>
+    <div class="field"><label for="cCalib">CALIBRATION DATE *</label><input type="date" id="cCalib" required></div>
+   </div>
+   <h3 style="margin-top:22px">Rooms / Areas to Counter Check</h3>
+   <div class="clockbar">Current date and time: <b id="liveClock2">--</b></div>
+   <div class="rooms">
+    <div class="rl-head crl"><div>#</div><div>ROOM / AREA</div><div>STANDARD</div><div>LATEST MONITORING READING</div><div>COUNTER CHECK TEMPERATURE</div><div>TIME RECORDED</div><div>STATUS</div></div>
+    <div id="cRoomRows"></div>
+   </div>
+   <div id="cAssessment" class="notice">Type a counter check reading beside any room. Its status and time will appear here and in the row.</div>
+   <div class="actions"><button type="submit">Save Counter Checks</button><button type="reset" class="secondary" onclick="setTimeout(resetCRooms,0)">Clear Form</button></div>
+  </form>
+  <h3 style="margin-top:26px">Counter Checking Checklist</h3>
+  <div id="counterSheetBlock">
+   <div class="sheetbar"><div class="field"><label for="cSheetDate">COUNTER CHECK DATE</label><input type="date" id="cSheetDate"></div><button class="secondary" onclick="printSheet('psc')">Print Sheet</button><span class="legend"><b></b>Out of standard or discrepancy • Tap a room name to counter check it • Tap a reading to view its details</span></div>
+   <div class="tablewrap"><table id="counterSheet" class="sheet"></table></div>
+   <div id="counterSigs" class="sigrow"></div>
+   <div class="signctl">
+    <h3 id="cSigTitle" style="margin-top:18px">Sign Counter Checking Checklist</h3>
+    <div class="legend">Sign only once, after you have finished all your counter checks for this date.</div>
+    <div class="grid"><div class="field"><label for="cSigName">OIC/PLI (COUNTER CHECKED BY) *</label><select id="cSigName"></select></div></div>
+    <canvas id="cSheetSigPad" class="sigpad" aria-label="OIC/PLI signature"></canvas>
+    <div class="actions"><button type="button" onclick="saveCounterSig()">Sign &amp; Save</button><button type="button" class="secondary" onclick="clearPad($('cSheetSigPad'))">Clear Signature</button></div>
+   </div>
+  </div>
+
+ </section>
+ <section id="verify" class="panel hidden">
+  <h2>4. Weekly Quality Verification</h2>
+  <div class="notice">Quality personnel verify the monitoring records of <b>one whole week (Monday to Sunday)</b> in a single review. Compare the readings with the standards, check the deviations and remarks, then sign. Every pending record in the selected week is marked with your decision. Night shift records follow the advance date of the sheet.</div>
+  <div class="tablewrap"><table style="min-width:860px"><thead><tr><th>Week</th><th>Entries</th><th>Deviations</th><th>Pending</th><th>Status</th><th>Verified By</th><th>Action</th></tr></thead><tbody id="weekBody"></tbody></table></div>
+  <div id="weekEditor" class="panel hidden" style="margin-top:16px;background:#f8fafb">
+   <h3 id="weekTitle"></h3>
+   <div id="weekSummary" class="notice"></div>
+   <h3>Monitoring Sheets in this Week</h3>
+   <div class="tablewrap"><table style="min-width:760px"><thead><tr><th>Sheet Date</th><th>Shift</th><th>Entries</th><th>Deviations</th><th>Signed by Monitor</th><th>Sheet</th></tr></thead><tbody id="weekSheets"></tbody></table></div>
+   <h3 style="margin-top:18px">Deviations and Remarks</h3>
+   <div class="tablewrap"><table style="min-width:760px"><thead><tr><th>Date / Time</th><th>Area</th><th>Reading</th><th>Standard</th><th>Monitor / Shift</th><th>Remarks / Action</th></tr></thead><tbody id="weekFlags"></tbody></table></div>
+   <div id="weekForm">
+    <h3 style="margin-top:18px">Verify this Week</h3>
+    <div class="grid">
+     <div class="field"><label for="verifier">VERIFIED BY (QUALITY PERSONNEL) *</label><select id="verifier"></select><input id="verifierOther" class="hidden" placeholder="Specify complete name"></div>
+     <div class="field"><label for="verifyDate">DATE / TIME VERIFIED *</label><input id="verifyDate" type="datetime-local"></div>
+     <div class="field wide"><label for="verifyRemarks">VERIFICATION REMARKS *</label><textarea id="verifyRemarks" rows="2" placeholder="Record review findings, required follow-up, or reason for rejection"></textarea></div>
+    </div>
+    <h3 style="margin-top:18px">Verification Questions</h3>
+    <div class="grid">
+     <div class="field wide"><label for="vq1">1. Who is the PLI in charge of monitoring the blast freezing activity? *</label><select id="vq1"></select><input id="vq1Other" class="hidden" placeholder="Specify complete name"></div>
+     <div class="field wide"><label for="vq2">2. Does the PLI perform ice point verification prior to use? *</label><select id="vq2"><option value="">Select answer</option><option>Yes</option><option>No</option></select></div>
+     <div class="field wide"><label for="vq3">3. Is the PLI aware of the calibration due date of the measuring equipment used for monitoring? *</label><select id="vq3"><option value="">Select answer</option><option>Yes</option><option>No</option></select></div>
+     <div class="field wide"><label for="vq4">4. Is the thermometer cleaned and sanitized prior to use? *</label><select id="vq4"><option value="">Select answer</option><option>Yes</option><option>No</option></select></div>
+    </div>
+    <div id="devBlock" class="hidden">
+     <h3 style="margin-top:18px">Deviation Follow-up</h3>
+     <div class="notice alert">This week has temperature deviation(s). Complete the action taken, its result, and the product disposition.</div>
+     <div class="grid">
+      <div class="field wide"><label for="vAction">ACTION TAKEN *</label><textarea id="vAction" rows="2" placeholder="Describe the action taken for the deviation(s)"></textarea></div>
+      <div class="field wide"><label for="vResult">RESULT OF ACTION TAKEN *</label><textarea id="vResult" rows="2" placeholder="Describe the result of the action taken"></textarea></div>
+      <div class="field wide"><label for="vDisp">PRODUCT DISPOSITION *</label><input id="vDisp" placeholder="Enter product disposition (N/A if none)"></div>
+     </div>
+    </div>
+    <h3 style="margin-top:18px">Verification Decision</h3>
+    <div class="grid">
+     <div class="field wide"><label for="decision">VERIFICATION DECISION * <small>(decide after answering the questions above)</small></label><select id="decision"><option value="Verified">Verified – Acceptable</option><option value="Rejected">Rejected – For correction / review</option></select></div>
+    </div>
+    <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-top:14px">VERIFIER SIGNATURE *</label>
+    <canvas id="vPad" class="sigpad" aria-label="Draw signature"></canvas>
+    <div class="actions"><button class="success" onclick="submitWeek()">Submit Weekly Verification</button><button class="secondary" onclick="clearPad($('vPad'))">Clear Signature</button><button class="secondary" onclick="closeWeek()">Cancel</button></div>
+   </div>
+   <div id="weekDone" class="hidden"></div>
+   <div class="actions"><button class="secondary" id="weekCloseBtn" onclick="closeWeek()">Close</button></div>
+  </div>
+ </section>
+ 
+ <footer>Hourly Room Temperature Monitoring System • Automatic timestamping • Browser-based recordkeeping prototype</footer>
+</div>
+<script>
+function resetAllRecords(){
+  const ok=confirm("WARNING: This will permanently delete ALL saved monitoring records, counter check records, monitoring sheet signatures, and weekly verifications from this browser/device. System settings, personnel names, areas, and temperature standards will remain unchanged. Continue?");
+  if(!ok)return;
+  ["hourlyTempRecords","hourlyTempCounterChecks","hourlyTempSheetSigs","hourlyTempCounterSheetSigs","hourlyTempWeeklyVerifications"].forEach(key=>localStorage.removeItem(key));
+  alert("All saved records have been reset. The system will now reload.");
+  location.reload();
+}
+
+const personnel=["SENITA, ANNABEL", "VIGO, ALICA", "PASCUAL, JONALYN", "NALOG, HANIESA", "BANTILING, JENNY ROSE", "FIGUEROA, GRACE", "TABIOS, MARIEL", "ANAPI, MARK PAUL", "CRUZ, DEANN CHRISTIAN", "PARCELA, SUNDER", "AURELIO, IRISH", "NANQUILADA, ROSE", "DELA CRUZ, ISHIKAWA YUKI", "SERRANO, CLYDE AXL", "STA.CRUZ, GERELLA NICA"];
+const areas=[
+["HOLDING ROOM 1",-2,0,"-2.0°C to 0.0°C"],["HOLDING ROOM 2",-2,0,"-2.0°C to 0.0°C"],["HOLDING ROOM 3",-2,0,"-2.0°C to 0.0°C"],
+["COLD STORAGE 1",null,-18,"-18.0°C and below"],["COLD STORAGE 2",null,-18,"-18.0°C and below"],["COLD STORAGE 3",null,-18,"-18.0°C and below"],["COLD STORAGE 4",null,-18,"-18.0°C and below"],
+["LOADING DOCK (NEW)",null,10,"10.0°C max"],["LAYERING AREA / CARTONING AREA",null,10,"10.0°C max"],
+["BLAST FREEZING AREA 1",null,-30,"-30.0°C and below"],["BLAST FREEZING AREA 2",null,-30,"-30.0°C and below"],
+["LAYERING AREA",null,10,"10.0°C max"],["BLAST FREEZING AREA 3",null,-30,"-30.0°C and below"],["BLAST FREEZING AREA 4",null,-30,"-30.0°C and below"],
+["CARTONING AREA",null,10,"10.0°C max"],["ANTE ROOM",null,10,"10.0°C max"]];
+const $=id=>document.getElementById(id);
+let data=JSON.parse(localStorage.getItem("hourlyTempRecords")||"[]"), selectedVerify=null;
+const monitorPersonnel=[
+"SENITA, ANNABEL",
+"VIGO, ALICA",
+"PASCUAL, JONALYN",
+"NALOG, HANIESA",
+"BANTILING, JENNY ROSE",
+"FIGUEROA, GRACE",
+"TABIOS, MARIEL",
+"ANAPI, MARK PAUL",
+"CRUZ, DEANN CHRISTIAN",
+"PARCELA, SUNDER",
+"AURELIO, IRISH",
+"NANQUILADA, ROSE",
+"DELA CRUZ, ISHIKAWA YUKI",
+"SERRANO, CLYDE AXL",
+"STA.CRUZ, GERELLA NICA"
+];
+monitorPersonnel.forEach(p=>$("monitor").add(new Option(p,p)));
+areas.forEach(a=>{$("filterArea").add(new Option(a[0],a[0]));});
+const pad=n=>String(n).padStart(2,"0");
+function currentStamp(){const d=new Date();return {date:`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,time:`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`};}
+function standard(a){return a[3]}
+function isCompliant(area,temp){let a=areas.find(x=>x[0]===area);return a[1]!==null?temp>=a[1]&&temp<=a[2]:temp<=a[2]}
+function hasHourlyRecord(area,stamp){return data.some(r=>r.area===area&&r.date===stamp.date&&String(r.time||"").slice(0,2)===stamp.time.slice(0,2))}
+
+function save(){localStorage.setItem("hourlyTempRecords",JSON.stringify(data));render()}
+
+/* ===== Room list entry ===== */
+const rl={state:[],locked:[]};
+function cleanTemp(s){s=String(s).replace(/[^0-9.\-]/g,"");const neg=s.charAt(0)==="-";s=s.replace(/-/g,"");const p=s.split(".");s=p[0]+(p.length>1?"."+p.slice(1).join("").slice(0,1):"");return (neg?"-":"")+s}
+function setTemp(inp,raw){inp.value=raw===""?"":raw+"\u00B0C";try{inp.setSelectionRange(raw.length,raw.length)}catch(_){}}
+function clampCaret(inp){setTimeout(()=>{const n=cleanTemp(inp.value).length;try{if(inp.selectionStart>n||inp.selectionEnd>n)inp.setSelectionRange(n,n)}catch(_){}},0)}
+function buildRoomList(){
+ $("roomRows").innerHTML=areas.map((a,i)=>`<div class="rl-row" id="rl${i}"><div class="rl-no">${i+1}</div><div class="rl-room">${esc(a[0])}</div><div class="rl-std">${esc(a[3])}</div><div class="rl-temp"><div class="tempbox"><button type="button" class="signbtn" id="rlb${i}" data-i="${i}" tabindex="-1" title="Switch between negative and positive" aria-label="Toggle minus sign">&plusmn;</button><input class="tin" id="tin${i}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter temp" aria-label="Actual temperature for ${esc(a[0])}"></div></div><div class="rl-time" id="rlt${i}"><b></b><small></small></div><div class="rl-stat" id="rls${i}"></div><div class="rl-rem hidden" id="rlr${i}"><input id="rlri${i}" placeholder="Remarks / action taken (out of standard)"></div></div>`).join("");
+ const box=$("roomRows");
+ box.addEventListener("input",e=>{if(e.target.classList.contains("tin"))onTemp(Number(e.target.dataset.i))});
+ box.addEventListener("click",e=>{const b=e.target.closest(".signbtn");if(b){toggleSign(Number(b.dataset.i));return}if(e.target.classList.contains("tin"))clampCaret(e.target)});
+ box.addEventListener("focusin",e=>{if(e.target.classList.contains("tin"))clampCaret(e.target)});
+ box.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList.contains("tin")){e.preventDefault();let n=Number(e.target.dataset.i)+1,nx;while(n<areas.length){nx=$("tin"+n);if(nx&&!nx.disabled){nx.focus();return}n++}e.target.blur()}});
+}
+function toggleSign(i){const inp=$("tin"+i);if(inp.disabled)return;let raw=cleanTemp(inp.value);raw=raw.charAt(0)==="-"?raw.slice(1):"-"+raw;setTemp(inp,raw);inp.focus();onTemp(i)}
+function onTemp(i){const inp=$("tin"+i),raw=cleanTemp(inp.value);setTemp(inp,raw);
+ if(!/\d/.test(raw))rl.state[i]=null;else rl.state[i]={stamp:currentStamp(),temp:Number(raw)};
+ paintRow(i);updateSummary()}
+function paintRow(i){const s=rl.state[i],row=$("rl"+i),tm=$("rlt"+i),st=$("rls"+i),rem=$("rlr"+i);
+ if(!s){tm.classList.remove("on");tm.querySelector("b").textContent="";tm.querySelector("small").textContent="";st.innerHTML="";rem.classList.add("hidden");row.className="rl-row";return}
+ const ok=isCompliant(areas[i][0],s.temp);
+ tm.querySelector("b").textContent=s.stamp.time;tm.querySelector("small").textContent=s.stamp.date;
+ if(!tm.classList.contains("on"))tm.classList.add("on");
+ st.innerHTML=badge(ok?"Compliant":"Deviation");rem.classList.toggle("hidden",ok);
+ row.className="rl-row filled"+(ok?"":" dev")}
+function refreshLocks(){const now=currentStamp();
+ areas.forEach((a,i)=>{const inp=$("tin"+i);if(!inp)return;
+  const rec=rl.state[i]?null:data.filter(r=>r.area===a[0]&&r.date===now.date&&String(r.time).slice(0,2)===now.time.slice(0,2)).sort((x,y)=>y.id-x.id)[0];
+  if(rec){rl.locked[i]=true;inp.disabled=true;$("rlb"+i).disabled=true;inp.value=rec.temp.toFixed(1)+"\u00B0C";
+   const tm=$("rlt"+i);tm.querySelector("b").textContent=rec.time;tm.querySelector("small").textContent="Already recorded this hour";tm.classList.add("on");
+   $("rls"+i).innerHTML=badge(rec.assessment);$("rlr"+i).classList.add("hidden");$("rl"+i).className="rl-row locked"}
+  else if(rl.locked[i]){rl.locked[i]=false;inp.disabled=false;$("rlb"+i).disabled=false;inp.value="";paintRow(i)}
+ });updateSummary()}
+function updateSummary(){const box=$("assessment");let n=0,dev=0,lk=0;
+ areas.forEach((a,i)=>{if(rl.locked[i])lk++;const s=rl.state[i];if(s){n++;if(!isCompliant(a[0],s.temp))dev++}});
+ const lockTxt=lk?` ${lk} room(s) already recorded for this hour.`:"";
+ if(!n){box.className="notice";box.textContent="Type a reading beside any room. Its status and time will appear here and in the row."+lockTxt;return}
+ box.className="notice "+(dev?"alert":"good");
+ box.textContent=`${n} room(s) filled \u2022 ${n-dev} within standard \u2022 ${dev} out of standard. Press Save Monitoring Records to submit.`+(dev?" Document the action taken for out-of-standard readings.":"")+lockTxt}
+function resetAssessment(){areas.forEach((a,i)=>{rl.state[i]=null;rl.locked[i]=false;const inp=$("tin"+i);inp.disabled=false;inp.value="";$("rlb"+i).disabled=false;$("rlri"+i).value="";paintRow(i)});refreshLocks()}
+$("entryForm").addEventListener("submit",e=>{e.preventDefault();
+ const filled=[];areas.forEach((a,i)=>{if(rl.state[i])filled.push(i)});
+ if(!filled.length){alert("Enter a temperature for at least one room before saving.");return}
+ const todo=[],skipped=[];
+ filled.forEach(i=>{if(hasHourlyRecord(areas[i][0],rl.state[i].stamp))skipped.push(areas[i][0]);else todo.push(i)});
+ if(!todo.length){alert("ALREADY RECORDED\n\nThe filled room(s) already have a record for that hour:\n\u2022 "+skipped.join("\n\u2022 "));return}
+ const noRem=todo.filter(i=>!isCompliant(areas[i][0],rl.state[i].temp)&&!$("rlri"+i).value.trim());
+ if(noRem.length&&!confirm(`${noRem.length} room(s) are out of standard with no remarks / action taken:\n\n\u2022 ${noRem.map(i=>areas[i][0]).join("\n\u2022 ")}\n\nSave anyway?`))return;
+ const base=Date.now();let last=null;
+ todo.forEach((i,k)=>{const a=areas[i],s=rl.state[i],ok=isCompliant(a[0],s.temp);
+  const r={id:base+k,monitor:$("monitor").value,shift:$("shift").value,date:s.stamp.date,time:s.stamp.time,area:a[0],temp:s.temp,standard:standard(a),thermo:$("thermo").value.trim(),calibration:$("calibration").value,remarks:$("rlri"+i).value.trim(),assessment:ok?"Compliant":"Deviation",verification:"Pending Verification",verifier:"",verifyDate:"",decisionRemarks:""};
+  data.unshift(r);last=r});
+ focusSheet(last);save();e.target.reset();resetAssessment();
+ alert(`${todo.length} monitoring record(s) saved and sent for Quality verification.`+(skipped.length?`\n\nSkipped (already recorded this hour):\n\u2022 ${skipped.join("\n\u2022 ")}`:""))});
+function showTab(t){["entry","records","verify","counter"].forEach(x=>$(x).classList.toggle("hidden",x!==t));if(t==="entry")refreshLocks();if(t==="records"||t==="verify"||t==="counter")render()}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function badge(s){return `<span class="status ${s==="Compliant"||s==="Verified"||s==="Matched"?"ok":s==="Deviation"||s==="Rejected"||s==="Discrepancy"?"bad":"pending"}">${esc(s)}</span>`}
+function render(){
+$("totalCount").textContent=data.length;$("compliantCount").textContent=data.filter(r=>r.assessment==="Compliant").length;$("deviationCount").textContent=data.filter(r=>r.assessment==="Deviation").length;$("pendingCount").textContent=data.filter(r=>r.verification==="Pending Verification").length;
+let fd=$("filterDate").value,fa=$("filterArea").value,fs=$("filterStatus").value,q=($("searchText").value||"").toLowerCase();
+let rows=data.filter(r=>(!fd||r.date===fd)&&(!fa||r.area===fa)&&(!fs||r.verification===fs||r.assessment===fs)&&(`${r.monitor} ${r.thermo} ${r.area}`.toLowerCase().includes(q)));
+$("recordsBody").innerHTML=rows.map(r=>`<tr><td>${esc(r.date)}<br>${esc(r.time)}</td><td>${esc(r.area)}</td><td><b>${r.temp.toFixed(1)}°C</b></td><td>${esc(r.standard)}</td><td><div class="monitor-counter-wrap"><div class="monitor-info"><b>${esc(r.monitor)}</b><br><small>${esc(r.shift)}</small></div>${(()=>{let cc=cdata.filter(x=>String(x.linkedId)===String(r.id)).sort((a,b)=>b.id-a.id)[0];return cc?`<div class="counter-sign-display"><small>OIC/PLI Counter Checked</small><b>${esc(cc.checker)}</b>${ocSig(cc)?`<img src="${ocSig(cc)}" alt="OIC/PLI counter check signature">`:""}</div>`:`<div class="counter-sign-display"><small>OIC/PLI Counter Check</small><span>Pending</span></div>`})()}</div></td><td>${esc(r.thermo)}<br>${esc(r.calibration)}</td><td>${badge(r.assessment)}</td><td>${badge(r.verification)}${r.verifier?`<br><small>${esc(r.verifier)}</small>`:""}</td><td><button class="secondary" onclick="viewRecord(${r.id})">View</button></td></tr>`).join("")||`<tr><td colspan="9">No monitoring records found.</td></tr>`;
+renderWeeks();
+renderCounter();renderSheet();}
+["filterDate","filterArea","filterStatus","searchText"].forEach(id=>$(id).addEventListener("input",render));
+function viewRecord(id){let r=data.find(x=>x.id===id),cc=cdata.filter(x=>String(x.linkedId)===String(r.id)).sort((a,b)=>b.id-a.id)[0];alert(`Record #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nTemperature: ${r.temp}°C (${r.assessment})\nMonitor / PLI: ${r.monitor} / ${r.shift}\nOIC/PLI Counter Checked By: ${cc?cc.checker:"Pending"}\nCounter Check Signature: ${cc&&ocSig(cc)?"Signed":"Not yet signed"}\nThermometer: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}\nVerification: ${r.verification}\nVerified by: ${r.verifier||"—"}\nVerified at: ${r.verifyDate||"—"}\nVerification remarks: ${r.decisionRemarks||"—"}`)}
+function exportCSV(){let cols=["date","time","area","temp","standard","assessment","monitor","shift","thermo","calibration","remarks","verification","verifier","verifyDate","decisionRemarks"];let csv=[cols.join(","),...data.map(r=>cols.map(k=>`"${String(r[k]??"").replace(/"/g,'""')}"`).join(","))].join("\n");let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="Hourly_Room_Temperature_Monitoring.csv";a.click();URL.revokeObjectURL(a.href)}
+const COUNTER_TOL=1.0;
+let cdata=JSON.parse(localStorage.getItem("hourlyTempCounterChecks")||"[]");
+let counterSigs=JSON.parse(localStorage.getItem("hourlyTempCounterSheetSigs")||"{}");
+function ocSig(c){if(c.signature)return c.signature;let g=(counterSigs[c.date]||[]).find(x=>x.name.trim().toLowerCase()===String(c.checker).trim().toLowerCase());return g?g.sig:""}
+function renderCounterSigs(){let d=$("cSheetDate").value;if(!d){$("counterSigs").innerHTML="";return}
+let sigs=counterSigs[d]||[];
+$("counterSigs").innerHTML=sigs.map((g,i)=>`<div>${g.sig?`<img src="${g.sig}" alt="signature">`:'<div class="blank"></div>'}<p><b>OIC/PLI:</b> ${esc(g.name)}</p><button class="secondary rm noprint" onclick="removeCounterSig('${d}',${i})">Remove</button></div>`).join("");
+let names=[...new Set(cdata.filter(r=>r.date===d).map(r=>r.checker.trim()))].sort(),cur=$("cSigName").value;
+$("cSigName").innerHTML=names.length?names.map(n=>`<option>${esc(n)}</option>`).join(""):'<option value="">No counter checks on this date</option>';if(names.includes(cur))$("cSigName").value=cur;
+$("cSigTitle").textContent="Sign Counter Checking Checklist — "+fmtD(d);initPad($("cSheetSigPad"))}
+function saveCounterSig(){let d=$("cSheetDate").value,name=$("cSigName").value,c=$("cSheetSigPad");
+if(!name){alert("There are no counter checks on this date yet, so there is nobody to sign.");return}
+if(c.dataset.has!=="1"){alert("Please sign in the signature box first.");return}
+let list=(counterSigs[d]||[]).filter(g=>g.name!==name);list.push({name,sig:c.toDataURL()});counterSigs[d]=list;
+localStorage.setItem("hourlyTempCounterSheetSigs",JSON.stringify(counterSigs));clearPad(c);render();alert("OIC/PLI signature saved for "+name+".")}
+function removeCounterSig(d,i){if(!confirm("Remove this signature?"))return;counterSigs[d].splice(i,1);localStorage.setItem("hourlyTempCounterSheetSigs",JSON.stringify(counterSigs));render()}
+$("tolText").textContent="±"+COUNTER_TOL.toFixed(1)+"°C";
+personnel.forEach(p=>$("cPeople").appendChild(new Option(p,p)));
+
+const stampMs=r=>new Date(r.date+"T"+r.time).getTime();
+const latestMon=area=>data.filter(r=>r.area===area).sort((a,b)=>b.id-a.id)[0];
+const latestCC=area=>cdata.filter(r=>r.area===area).sort((a,b)=>b.id-a.id)[0];
+const crl={state:[]};
+function buildCounterRooms(){
+ $("cRoomRows").innerHTML=areas.map((a,i)=>`<div class="rl-row crl-row" id="crl${i}"><div class="rl-no">${i+1}</div><div class="rl-room">${esc(a[0])}</div><div class="rl-std">${esc(a[3])}</div><div class="rl-mon" id="crm${i}"></div><div class="rl-temp"><div class="tempbox"><button type="button" class="signbtn" id="crb${i}" data-i="${i}" tabindex="-1" title="Switch between negative and positive" aria-label="Toggle minus sign">&plusmn;</button><input class="tin" id="ctin${i}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter temp" aria-label="Counter check temperature for ${esc(a[0])}"></div></div><div class="rl-time" id="crt${i}"><b></b><small></small></div><div class="rl-stat" id="crs${i}"></div><div class="rl-rem hidden" id="crr${i}"><input id="crri${i}" placeholder="Remarks / action taken (out of standard or discrepancy)"></div></div>`).join("");
+ const box=$("cRoomRows");
+ box.addEventListener("input",e=>{if(e.target.classList.contains("tin"))onCTemp(Number(e.target.dataset.i))});
+ box.addEventListener("click",e=>{const b=e.target.closest(".signbtn");if(b){toggleCSign(Number(b.dataset.i));return}if(e.target.classList.contains("tin"))clampCaret(e.target)});
+ box.addEventListener("focusin",e=>{if(e.target.classList.contains("tin"))clampCaret(e.target)});
+ box.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList.contains("tin")){e.preventDefault();const n=Number(e.target.dataset.i)+1;if(n<areas.length)$("ctin"+n).focus();else e.target.blur()}});
+ refreshCLinks()}
+function refreshCLinks(){if(!$("crm0"))return;
+ areas.forEach((a,i)=>{const l=latestMon(a[0]);
+  if(l){const mins=Math.round((Date.now()-stampMs(l))/60000);$("crm"+i).innerHTML=`<b>${l.temp.toFixed(1)}\u00B0C</b><small>${esc(l.monitor)}<br>${esc(l.date)} ${esc(l.time)}${mins>90?"<br>\u26A0 "+mins+" min old":""}</small>`}
+  else $("crm"+i).innerHTML="<small>No monitoring reading yet</small>";
+  paintCRow(i)})}
+function toggleCSign(i){const inp=$("ctin"+i);let raw=cleanTemp(inp.value);raw=raw.charAt(0)==="-"?raw.slice(1):"-"+raw;setTemp(inp,raw);inp.focus();onCTemp(i)}
+function onCTemp(i){const inp=$("ctin"+i),raw=cleanTemp(inp.value);setTemp(inp,raw);
+ if(!/\d/.test(raw))crl.state[i]=null;else crl.state[i]={stamp:currentStamp(),temp:Number(raw)};
+ paintCRow(i);updateCSummary()}
+function cDiff(i){const s=crl.state[i],l=latestMon(areas[i][0]);return s&&l?Math.round(Math.abs(s.temp-l.temp)*10)/10:null}
+function paintCRow(i){const s=crl.state[i],row=$("crl"+i),tm=$("crt"+i),st=$("crs"+i),rem=$("crr"+i);
+ if(!s){tm.classList.remove("on");tm.querySelector("b").textContent="";tm.querySelector("small").textContent="";st.innerHTML="";rem.classList.add("hidden");row.className="rl-row crl-row";return}
+ const ok=isCompliant(areas[i][0],s.temp),d=cDiff(i),mis=d!==null&&d>COUNTER_TOL,bad=!ok||mis;
+ tm.querySelector("b").textContent=s.stamp.time;tm.querySelector("small").textContent=s.stamp.date;
+ if(!tm.classList.contains("on"))tm.classList.add("on");
+ st.innerHTML=badge(ok?"Compliant":"Deviation")+(d===null?"":" "+badge(mis?"Discrepancy":"Matched")+`<small>Diff ${d.toFixed(1)}\u00B0C</small>`);
+ rem.classList.toggle("hidden",!bad);
+ row.className="rl-row crl-row filled"+(bad?" dev":"")}
+function updateCSummary(){const box=$("cAssessment");let n=0,dev=0,mis=0;
+ areas.forEach((a,i)=>{const s=crl.state[i];if(!s)return;n++;if(!isCompliant(a[0],s.temp))dev++;const d=cDiff(i);if(d!==null&&d>COUNTER_TOL)mis++});
+ if(!n){box.className="notice";box.textContent="Type a counter check reading beside any room. Its status and time will appear here and in the row.";return}
+ box.className="notice "+(dev||mis?"alert":"good");
+ box.textContent=`${n} room(s) filled \u2022 ${n-dev} within standard \u2022 ${dev} out of standard \u2022 ${mis} discrepancy (more than \u00B1${COUNTER_TOL.toFixed(1)}\u00B0C vs monitoring). Press Save Counter Checks to submit.`+(dev||mis?" Document the action taken for each flagged room.":"")}
+function resetCRooms(){areas.forEach((a,i)=>{crl.state[i]=null;$("ctin"+i).value="";$("crri"+i).value="";paintCRow(i)});updateCSummary()}
+function saveC(){localStorage.setItem("hourlyTempCounterChecks",JSON.stringify(cdata));renderCounter()}
+$("counterForm").addEventListener("submit",e=>{e.preventDefault();
+ const filled=[];areas.forEach((a,i)=>{if(crl.state[i])filled.push(i)});
+ if(!filled.length){alert("Enter a counter check temperature for at least one room before saving.");return}
+ const checker=$("cChecker").value.trim();
+ const same=filled.filter(i=>{const l=latestMon(areas[i][0]);return l&&l.monitor.trim().toLowerCase()===checker.toLowerCase()});
+ if(same.length){alert("The counter checker must be a different person from the one who monitored.\n\nSame person as the monitor in:\n\u2022 "+same.map(i=>areas[i][0]).join("\n\u2022 "));$("cChecker").focus();return}
+ const noRem=filled.filter(i=>{const s=crl.state[i],d=cDiff(i);return(!isCompliant(areas[i][0],s.temp)||(d!==null&&d>COUNTER_TOL))&&!$("crri"+i).value.trim()});
+ if(noRem.length&&!confirm(`${noRem.length} room(s) are out of standard or have a discrepancy with no remarks / action taken:\n\n\u2022 ${noRem.map(i=>areas[i][0]).join("\n\u2022 ")}\n\nSave anyway?`))return;
+ const base=Date.now();
+ filled.forEach((i,k)=>{const a=areas[i],s=crl.state[i],l=latestMon(a[0]),d=cDiff(i);
+  cdata.unshift({id:base+k,date:s.stamp.date,time:s.stamp.time,checker,shift:$("cShift").value,area:a[0],temp:s.temp,standard:standard(a),thermo:$("cThermo").value.trim(),calibration:$("cCalib").value,remarks:$("crri"+i).value.trim(),assessment:isCompliant(a[0],s.temp)?"Compliant":"Deviation",linkedId:l?l.id:"",linkedTemp:l?l.temp:"",linkedMonitor:l?l.monitor:"",linkedStamp:l?l.date+" "+l.time:"",diff:d,result:l?(d<=COUNTER_TOL?"Matched":"Discrepancy"):"No Linked Reading"})});
+ saveC();e.target.reset();resetCRooms();alert(`${filled.length} counter check record(s) saved.`)});
+function counterPick(area){showTab("counter");const i=areas.findIndex(a=>a[0]===area);if(i<0)return;$("crl"+i).scrollIntoView({behavior:"smooth",block:"center"});$("ctin"+i).focus()}
+function renderCounter(){renderCounterSheet();renderCounterSigs();initPad($("cSheetSigPad"));refreshCLinks()}
+function exportCounterCSV(){let cols=["date","time","area","temp","standard","assessment","linkedTemp","linkedMonitor","linkedStamp","diff","result","checker","shift","thermo","calibration","remarks"];let csv=[cols.join(","),...cdata.map(r=>cols.map(k=>`"${String(r[k]??"").replace(/"/g,'""')}"`).join(","))].join("\n");let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="Room_Temperature_Counter_Checks.csv";a.click();URL.revokeObjectURL(a.href)}
+
+const SHIFTS={"Day Shift":[5,14],"Mid Shift":[13,22],"Night Shift":[21,6]};
+const h12=h=>`${h%12||12}:00 ${h<12?"AM":"PM"}`;
+const shiftLabel=sh=>`${h12(SHIFTS[sh][0])} – ${h12(SHIFTS[sh][1])}`;
+const nextD=d=>{let x=new Date(d+"T00:00:00");x.setDate(x.getDate()+1);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`};
+const shiftSlots=(sh,d)=>{let[a,b]=SHIFTS[sh],n=((b-a+24)%24)+1,out=[];for(let i=0;i<n;i++){let t=a+i;out.push((a>b&&t<24?prevDay(d):d)+"|"+pad(t%24))}return out};
+const prevDay=d=>{let x=new Date(d+"T00:00:00");x.setDate(x.getDate()-1);return `${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`};
+const sd=r=>r.shift==="Night Shift"&&Number(r.time.slice(0,2))>=12?nextD(r.date):r.date;
+const fmtD=d=>new Date(d+"T00:00:00").toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
+const fmtS=d=>new Date(d+"T00:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric"});
+let sheetSigs=JSON.parse(localStorage.getItem("hourlyTempSheetSigs")||"{}");
+function focusSheet(r){$("sheetShift").value=r.shift;$("sheetDate").value=sd(r)}
+function renderSheet(){let d=$("sheetDate").value,sh=$("sheetShift").value;if(!d){$("sheetTable").innerHTML="";return}
+let recs=data.filter(r=>r.shift===sh&&sd(r)===d),cols=[...new Set([...shiftSlots(sh,d),...recs.map(r=>r.date+"|"+r.time.slice(0,2))])].sort();
+let head=`<thead><tr><th colspan="${cols.length+2}" class="sheettitle"><div style="position:sticky;left:8px;width:max-content">MONITORING — ${esc(sh.toUpperCase())} (${esc(shiftLabel(sh))}) — ${esc(fmtD(d))}</div></th></tr><tr><th rowspan="2" class="c1">ROOM</th><th rowspan="2" class="c2">STD</th><th colspan="${cols.length}">TIME</th></tr><tr>${cols.map(k=>{if(!k)return"<th>&nbsp;</th>";let[dt,h]=k.split("|");return `<th>${h}:00<br><small>${esc(fmtS(dt))}</small></th>`}).join("")}</tr></thead>`;
+let body=areas.map((a,i)=>`<tr><td class="room c1">${i+1}. ${esc(a[0])}</td><td class="c2">${esc(a[3])}</td>${cols.map(k=>{if(!k)return'<td class="cell"></td>';let[dt,h]=k.split("|"),rs=recs.filter(r=>r.area===a[0]&&r.date===dt&&r.time.slice(0,2)===h).sort((x,y)=>x.id-y.id);return `<td class="cell">${rs.map(r=>`<div class="rd${r.assessment==="Deviation"?" dev":""}" onclick="viewRecord(${r.id})" title="${esc(r.monitor)} • ${esc(r.time)}"><span class="t">${r.temp.toFixed(1)}</span><br><span class="tm">${esc(r.time.slice(0,5))}</span></div>`).join("")}</td>`}).join("")}</tr>`).join("");
+$("sheetTable").innerHTML=head+`<tbody>${body}</tbody>`;
+let key=d+"|"+sh,sigs=sheetSigs[key]||[];
+$("sheetSigs").innerHTML=sigs.map((g,i)=>`<div>${g.sig?`<img src="${g.sig}" alt="signature">`:'<div class="blank"></div>'}<p><b>Monitored By:</b> ${esc(g.name)}</p><button class="secondary rm noprint" onclick="removeSheetSig('${key}',${i})">Remove</button></div>`).join("")+(()=>{let ids=new Set(recs.map(r=>String(r.id))),seen={},out=[];cdata.slice().sort((a,b)=>b.id-a.id).forEach(c=>{if(!ocSig(c))return;if(!((c.shift===sh&&sd(c)===d)||ids.has(String(c.linkedId))))return;let k=String(c.checker).trim().toLowerCase();if(seen[k])return;seen[k]=1;out.push(c)});return out.map(c=>`<div class="ocsig"><img src="${ocSig(c)}" alt="OIC/PLI signature"><p><b>OIC/PLI:</b> ${esc(c.checker)}</p></div>`).join("")})();
+let mons=[...new Set(recs.map(r=>r.monitor))].sort(),cur=$("sigName").value;
+$("sigName").innerHTML=mons.length?mons.map(n=>`<option>${esc(n)}</option>`).join(""):'<option value="">No monitoring records on this shift / date</option>';if(mons.includes(cur))$("sigName").value=cur;
+$("sigTitle").textContent="Sign Monitoring Sheet — "+sh+" • "+fmtD(d);initSheetPad()}
+function initSheetPad(){let c=$("sigPad");if(c.dataset.init||!c.clientWidth)return;c.dataset.init="1";let dp=window.devicePixelRatio||1;c.width=c.clientWidth*dp;c.height=c.clientHeight*dp;let x=c.getContext("2d");x.setTransform(dp,0,0,dp,0,0);x.lineWidth=2;x.lineCap="round";x.lineJoin="round";x.strokeStyle="#12324a";let dr=false;const pt=e=>{let r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+c.addEventListener("pointerdown",e=>{dr=true;c.setPointerCapture(e.pointerId);let q=pt(e);x.beginPath();x.moveTo(q.x,q.y);x.lineTo(q.x+.1,q.y);x.stroke();c.dataset.has="1"});
+c.addEventListener("pointermove",e=>{if(!dr)return;let q=pt(e);x.lineTo(q.x,q.y);x.stroke()});
+["pointerup","pointercancel"].forEach(ev=>c.addEventListener(ev,()=>{dr=false}))}
+function clearSheetPad(){let c=$("sigPad"),x=c.getContext("2d");x.save();x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,c.width,c.height);x.restore();c.dataset.has=""}
+function saveSheetSig(){let d=$("sheetDate").value,sh=$("sheetShift").value,name=$("sigName").value,c=$("sigPad");
+if(!name){alert("There are no monitoring records on this shift and date yet, so there is nobody to sign.");return}
+if(c.dataset.has!=="1"){alert("Please sign in the signature box first.");return}
+let key=d+"|"+sh,list=(sheetSigs[key]||[]).filter(g=>g.name!==name);list.push({name,sig:c.toDataURL()});sheetSigs[key]=list;
+localStorage.setItem("hourlyTempSheetSigs",JSON.stringify(sheetSigs));clearSheetPad();renderSheet();alert("Signature saved for "+name+".")}
+function removeSheetSig(key,i){if(!confirm("Remove this signature?"))return;sheetSigs[key].splice(i,1);localStorage.setItem("hourlyTempSheetSigs",JSON.stringify(sheetSigs));renderSheet()}
+(()=>{let l=data.slice().sort((a,b)=>b.id-a.id)[0];if(l)focusSheet(l);else{$("sheetDate").value=currentStamp().date;$("sheetShift").value="Day Shift"}})();
+$("sheetDate").addEventListener("input",renderSheet);$("sheetShift").addEventListener("input",renderSheet);
+function printSheet(c){c=c||"ps";document.body.classList.add(c);window.print();document.body.classList.remove(c)}
+
+function renderCounterSheet(){let d=$("cSheetDate").value;if(!d){$("counterSheet").innerHTML="";return}
+let recs=cdata.filter(r=>r.date===d),hrs=[...new Set(recs.map(r=>Number(r.time.slice(0,2))))].sort((a,b)=>a-b);
+let cols=hrs.slice();while(cols.length<5)cols.push(null);
+let label=new Date(d+"T00:00:00").toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
+let head=`<thead><tr><th colspan="${cols.length+2}" class="sheettitle"><div style="position:sticky;left:8px;width:max-content">COUNTERCHECKING — ${esc(label)}</div></th></tr><tr><th rowspan="2" class="c1">ROOM</th><th rowspan="2" class="c2">STD</th><th colspan="${cols.length}">TIME</th></tr><tr>${cols.map(h=>`<th>${h===null?"&nbsp;":pad(h)+":00"}</th>`).join("")}</tr></thead>`;
+let body=areas.map((a,i)=>`<tr><td class="room c1" style="cursor:pointer" onclick="counterPick(areas[${i}][0])" title="Counter check this area">${i+1}. ${esc(a[0])}</td><td class="c2">${esc(a[3])}</td>${cols.map(h=>{if(h===null)return '<td class="cell"></td>';let rs=recs.filter(r=>r.area===a[0]&&Number(r.time.slice(0,2))===h).sort((x,y)=>x.id-y.id);return `<td class="cell">${rs.map(r=>`<div class="rd${r.assessment==="Deviation"||r.result==="Discrepancy"?" dev":""}" onclick="viewCounter(${r.id})" title="${esc(r.checker)} • ${esc(r.time)}"><span class="t">${r.temp.toFixed(1)}</span><br><span class="tm">${esc(r.time.slice(0,5))}</span></div>`).join("")}</td>`}).join("")}</tr>`).join("");
+$("counterSheet").innerHTML=head+`<tbody>${body}</tbody>`}
+$("cSheetDate").value=currentStamp().date;$("cSheetDate").addEventListener("input",()=>{renderCounterSheet();renderCounterSigs()});
+function viewCounter(id){let r=cdata.find(x=>x.id===id);alert(`Counter Check #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nCounter check: ${r.temp}°C (${r.assessment})\nMonitoring reading: ${r.linkedTemp!==""?r.linkedTemp+"°C by "+r.linkedMonitor+" ("+r.linkedStamp+")":"—"}\nDifference: ${r.diff!==null&&r.diff!==undefined?r.diff.toFixed(1)+"°C":"—"} (${r.result})\nCounter checker: ${r.checker} / ${r.shift}\nThermometer: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}`)}
+
+let weeklyVer=JSON.parse(localStorage.getItem("hourlyTempWeeklyVerifications")||"{}"),selectedWeek=null;
+const ymd=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
+const wkStart=d=>{let x=new Date(d+"T00:00:00");x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)};
+const fmtM=d=>new Date(d+"T00:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+const wkLabel=k=>{let b=new Date(k+"T00:00:00");b.setDate(b.getDate()+6);return fmtM(k)+" – "+fmtM(ymd(b))};
+const weekRecs=k=>data.filter(r=>wkStart(sd(r))===k);
+function weekStatus(k){let rs=weekRecs(k),pend=rs.filter(r=>r.verification==="Pending Verification").length,last=(weeklyVer[k]||[]).slice(-1)[0];
+let st=pend===rs.length?"Pending Verification":pend>0?"Partially Verified":(last?last.decision:(rs.some(r=>r.verification==="Rejected")?"Rejected":"Verified"));return{rs,pend,last,st}}
+function renderWeeks(){let keys=[...new Set(data.map(r=>wkStart(sd(r))))].sort().reverse();
+$("weekBody").innerHTML=keys.map(k=>{let w=weekStatus(k),dev=w.rs.filter(r=>r.assessment==="Deviation").length;
+return `<tr><td><b>${esc(wkLabel(k))}</b></td><td>${w.rs.length}</td><td>${dev?`<b style="color:#a42b21">${dev}</b>`:0}</td><td>${w.pend}</td><td>${badge(w.st)}</td><td>${w.last?esc(w.last.verifier)+(w.last.sig?`<img src="${w.last.sig}" alt="signature" style="display:block;height:34px;max-width:120px;object-fit:contain">`:""):"—"}</td><td><button class="secondary" onclick="openWeek('${k}')">${w.pend?"Review &amp; Verify":"View"}</button></td></tr>`}).join("")||'<tr><td colspan="7">No monitoring records yet.</td></tr>'}
+function initPad(c){if(c.dataset.init||!c.clientWidth)return;c.dataset.init="1";let dp=window.devicePixelRatio||1;c.width=c.clientWidth*dp;c.height=c.clientHeight*dp;let x=c.getContext("2d");x.setTransform(dp,0,0,dp,0,0);x.lineWidth=2;x.lineCap="round";x.lineJoin="round";x.strokeStyle="#12324a";let dr=false;const pt=e=>{let r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
+c.addEventListener("pointerdown",e=>{dr=true;c.setPointerCapture(e.pointerId);let q=pt(e);x.beginPath();x.moveTo(q.x,q.y);x.lineTo(q.x+.1,q.y);x.stroke();c.dataset.has="1"});
+c.addEventListener("pointermove",e=>{if(!dr)return;let q=pt(e);x.lineTo(q.x,q.y);x.stroke()});
+["pointerup","pointercancel"].forEach(ev=>c.addEventListener(ev,()=>{dr=false}))}
+function clearPad(c){let x=c.getContext("2d");x.save();x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,c.width,c.height);x.restore();c.dataset.has=""}
+function gotoSheet(d,sh){$("sheetDate").value=d;$("sheetShift").value=sh;showTab("records");window.scrollTo({top:0,behavior:"smooth"})}
+const verifierList=["Annabel Senita","Alicia Vigo","Jonalyn Pascual","Haniesa Nalog","Ronalyn Luza","Jerwin Mendoza","Joshua Francisco"],OTHER="Other (specify)";
+function fillPick(sel,list){sel.innerHTML='<option value="">Select name</option>'+list.map(n=>`<option>${esc(n)}</option>`).join("")+`<option>${OTHER}</option>`}
+fillPick($("verifier"),verifierList);fillPick($("vq1"),verifierList);
+[["verifier","verifierOther"],["vq1","vq1Other"]].forEach(([a,b])=>$(a).addEventListener("change",()=>{const o=$(a).value===OTHER;$(b).classList.toggle("hidden",!o);if(o)$(b).focus();else $(b).value=""}));
+const pickVal=(a,b)=>$(a).value===OTHER?$(b).value.trim():$(a).value;
+const vName=()=>pickVal("verifier","verifierOther"),vPli=()=>pickVal("vq1","vq1Other");
+function resetVerifyForm(){["vAction","vResult","vDisp"].forEach(id=>$(id).value="");["verifier","vq1","vq2","vq3","vq4"].forEach(id=>$(id).value="");["verifierOther","vq1Other"].forEach(id=>{$(id).value="";$(id).classList.add("hidden")})}
+function checksHtml(c){if(!c)return"";return `<div style="margin-top:8px;font-size:12px;color:#203040"><b>1.</b> PLI in charge of blast freezing monitoring: <b>${esc(c.q1)}</b><br><b>2.</b> PLI performs ice point verification prior to use: <b>${esc(c.q2)}</b><br><b>3.</b> PLI aware of calibration due date of measuring equipment: <b>${esc(c.q3)}</b><br><b>4.</b> Thermometer cleaned and sanitized prior to use: <b>${esc(c.q4)}</b></div>`}
+function devHtml(d){if(!d)return"";return `<div style="margin-top:8px;font-size:12px;color:#203040"><b>Action taken:</b> ${esc(d.action)}<br><b>Result of action taken:</b> ${esc(d.result)}<br><b>Product disposition:</b> ${esc(d.disp)}</div>`}
+function openWeek(k){selectedWeek=k;let w=weekStatus(k),dev=w.rs.filter(r=>r.assessment==="Deviation").length;
+$("weekTitle").textContent="Week of "+wkLabel(k);
+$("weekSummary").textContent=`${w.rs.length} monitoring entries • ${dev} deviation(s) • ${w.pend} pending verification`;
+let combos={};w.rs.forEach(r=>{let key=sd(r)+"|"+r.shift;(combos[key]=combos[key]||[]).push(r)});
+let ord={"Day Shift":0,"Mid Shift":1,"Night Shift":2},keys=Object.keys(combos).sort((a,b)=>{let[da,sa]=a.split("|"),[db,sb]=b.split("|");return da<db?-1:da>db?1:(ord[sa]??9)-(ord[sb]??9)});
+$("weekSheets").innerHTML=keys.map(key=>{let[d,sh]=key.split("|"),rs=combos[key],dv=rs.filter(r=>r.assessment==="Deviation").length,sg=(sheetSigs[d+"|"+sh]||[]).map(g=>g.name);
+return `<tr><td>${esc(fmtD(d))}</td><td>${esc(sh)}</td><td>${rs.length}</td><td>${dv?`<b style="color:#a42b21">${dv}</b>`:0}</td><td>${sg.length?esc(sg.join(", ")):"<small>Not signed</small>"}</td><td><button class="secondary" onclick="gotoSheet('${d}','${esc(sh)}')">View Sheet</button></td></tr>`}).join("");
+let fl=w.rs.filter(r=>r.assessment==="Deviation"||r.remarks).sort((a,b)=>a.id-b.id);
+$("weekFlags").innerHTML=fl.map(r=>`<tr><td>${esc(r.date)}<br>${esc(r.time)}</td><td>${esc(r.area)}</td><td><b>${r.temp.toFixed(1)}°C</b><br>${badge(r.assessment)}</td><td>${esc(r.standard)}</td><td>${esc(r.monitor)}<br>${esc(r.shift)}</td><td>${esc(r.remarks||"—")}</td></tr>`).join("")||'<tr><td colspan="6">No deviations or remarks this week.</td></tr>';
+let done=(weeklyVer[k]||[]);$("weekDone").innerHTML=done.map(v=>`<div class="notice ${v.decision==="Verified"?"good":"alert"}" style="margin-top:12px"><b>${esc(v.decision)}</b> by <b>${esc(v.verifier)}</b> • ${esc(v.date.replace("T"," "))} • ${v.count} record(s)<br>${esc(v.remarks)}${checksHtml(v.checks)}${devHtml(v.dev)}${v.sig?`<img src="${v.sig}" alt="signature" style="display:block;width:220px;height:80px;object-fit:contain;border-bottom:1px solid #333;margin-top:8px">`:""}</div>`).join("");
+$("weekDone").classList.toggle("hidden",!done.length);
+$("weekForm").classList.toggle("hidden",!w.pend);$("weekCloseBtn").classList.toggle("hidden",!!w.pend);
+if(w.pend){resetVerifyForm();$("devBlock").classList.toggle("hidden",!dev);let n=new Date();n.setMinutes(n.getMinutes()-n.getTimezoneOffset());$("verifyDate").value=n.toISOString().slice(0,16);$("decision").value="Verified";$("verifyRemarks").value="";}
+$("weekEditor").classList.remove("hidden");if(w.pend){initPad($("vPad"));clearPad($("vPad"))}
+$("weekEditor").scrollIntoView({behavior:"smooth",block:"start"})}
+function closeWeek(){$("weekEditor").classList.add("hidden");selectedWeek=null}
+function submitWeek(){if(!selectedWeek)return;let k=selectedWeek,w=weekStatus(k);
+if(!vName()||!$("verifyDate").value||!$("verifyRemarks").value.trim()){alert("Please complete the verifier name (select from the list, or specify if Other), verification date/time, and verification remarks.");return}
+if(!vPli()||!$("vq2").value||!$("vq3").value||!$("vq4").value){alert("Please answer all four verification questions (including the name of the PLI in charge of blast freezing monitoring).");return}
+let hasDev=w.rs.some(r=>r.assessment==="Deviation");
+if(hasDev&&(!$("vAction").value.trim()||!$("vResult").value.trim()||!$("vDisp").value.trim())){alert("This week has deviation(s). Please complete Action Taken, Result of Action Taken, and Product Disposition (type N/A if none).");return}
+if($("vPad").dataset.has!=="1"){alert("Please sign in the signature box.");return}
+let pend=w.rs.filter(r=>r.verification==="Pending Verification"),dec=$("decision").value,name=vName(),dt=$("verifyDate").value,rm=$("verifyRemarks").value.trim();
+pend.forEach(r=>{r.verification=dec;r.verifier=name;r.verifyDate=dt;r.decisionRemarks=rm});
+(weeklyVer[k]=weeklyVer[k]||[]).push({verifier:name,date:dt,decision:dec,remarks:rm,sig:$("vPad").toDataURL(),count:pend.length,checks:{q1:vPli(),q2:$("vq2").value,q3:$("vq3").value,q4:$("vq4").value},dev:hasDev?{action:$("vAction").value.trim(),result:$("vResult").value.trim(),disp:$("vDisp").value.trim()}:null});
+localStorage.setItem("hourlyTempWeeklyVerifications",JSON.stringify(weeklyVer));save();closeWeek();alert("Weekly verification saved for "+pend.length+" record(s).")}
+
+buildRoomList();refreshLocks();buildCounterRooms();
+(function(){const tick=()=>{const d=new Date();$("liveClock").textContent=$("liveClock2").textContent=d.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"})+"  "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds())};tick();setInterval(tick,1000);setInterval(refreshLocks,15000)})();
+render();
+</script>
+</body></html>
