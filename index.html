@@ -521,6 +521,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
    <button class="secondary" onclick="showTab('records')">Monitoring Records</button>
    <button class="secondary" onclick="showTab('counter')">Counter Check</button>
    <button class="secondary" onclick="showTab('verify')">Review</button>
+    <button class="secondary" onclick="showTab('extremes')">Highest &amp; Lowest</button>
    <button class="secondary" onclick="downloadSheetPDF()">📄 Download PDF</button>
    <button class="secondary" onclick="exportCSV()">Export CSV</button>
    <button class="danger" onclick="resetAllRecords()">Reset All Records</button>
@@ -534,27 +535,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
    <div class="metric"><b id="pendingCount">0</b><span>Awaiting Review</span></div>
   </div>
  
-  <!-- TEMPERATURE EXTREMES (HIGHEST & LOWEST READINGS) -->
-  <div class="hl-summary-container">
-    <div class="hl-title-bar">
-      <span>🌡️ TEMPERATURE EXTREMES (HIGHEST &amp; LOWEST READINGS)</span>
-      <small style="color:var(--muted);font-weight:normal">Real-time daily, weekly, and monthly tracking (excluding N/A readings)</small>
-    </div>
-    <div class="hl-grid">
-      <!-- Daily Card -->
-      <div class="hl-card">
-        <div class="hl-head">📅 TODAY'S READINGS</div>
-        <div class="hl-stat high">
-          <div class="hl-label">🔺 Highest</div>
-          <div class="hl-val" id="dayHigh">--</div>
-          <div class="hl-meta" id="dayHighMeta">No numeric readings today</div>
-        </div>
-        <div class="hl-stat low">
-          <div class="hl-label">🔻 Lowest</div>
-          <div class="hl-val" id="dayLow">--</div>
-          <div class="hl-meta" id="dayLowMeta">No numeric readings today</div>
-        </div>
-      </div>
+  
 
       <!-- Weekly Card -->
       <div class="hl-card">
@@ -765,6 +746,80 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
     <div class="actions"><button type="button" onclick="submitWeek()">Submit Review</button><button type="button" class="secondary" onclick="clearPad($('vPad'))">Clear Signature</button><button type="button" class="secondary" onclick="closeWeek()">Cancel</button></div>
    </div>
    <div id="weekCloseBtn" class="actions hidden" style="margin-top:14px"><button type="button" class="secondary" onclick="closeWeek()">Close Review</button></div>
+  </div>
+ </section>
+
+ <section id="extremes" class="panel hidden">
+  <h2>5. Highest &amp; Lowest Temperature Readings</h2>
+  <div class="notice">
+    Real-time summary of the highest and lowest temperature readings recorded across all refrigerated rooms, blast freezers, and cold storages. N/A readings (rooms with no operation) are automatically excluded.
+  </div>
+
+  <div class="hl-summary-container" style="border:none;box-shadow:none;padding:0;margin:12px 0 24px">
+    <div class="hl-grid">
+      <!-- Daily Card -->
+      <div class="hl-card">
+        <div class="hl-head">📅 TODAY'S READINGS</div>
+        <div class="hl-stat high">
+          <div class="hl-label">🔺 Highest</div>
+          <div class="hl-val" id="dayHigh">--</div>
+          <div class="hl-meta" id="dayHighMeta">No numeric readings today</div>
+        </div>
+        <div class="hl-stat low">
+          <div class="hl-label">🔻 Lowest</div>
+          <div class="hl-val" id="dayLow">--</div>
+          <div class="hl-meta" id="dayLowMeta">No numeric readings today</div>
+        </div>
+      </div>
+
+      <!-- Weekly Card -->
+      <div class="hl-card">
+        <div class="hl-head">📊 THIS WEEK (MON – SUN)</div>
+        <div class="hl-stat high">
+          <div class="hl-label">🔺 Highest</div>
+          <div class="hl-val" id="weekHigh">--</div>
+          <div class="hl-meta" id="weekHighMeta">No numeric readings this week</div>
+        </div>
+        <div class="hl-stat low">
+          <div class="hl-label">🔻 Lowest</div>
+          <div class="hl-val" id="weekLow">--</div>
+          <div class="hl-meta" id="weekLowMeta">No numeric readings this week</div>
+        </div>
+      </div>
+
+      <!-- Monthly Card -->
+      <div class="hl-card">
+        <div class="hl-head">🗓️ THIS MONTH</div>
+        <div class="hl-stat high">
+          <div class="hl-label">🔺 Highest</div>
+          <div class="hl-val" id="monthHigh">--</div>
+          <div class="hl-meta" id="monthHighMeta">No numeric readings this month</div>
+        </div>
+        <div class="hl-stat low">
+          <div class="hl-label">🔻 Lowest</div>
+          <div class="hl-val" id="monthLow">--</div>
+          <div class="hl-meta" id="monthLowMeta">No numeric readings this month</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px">Room-by-Room Highest &amp; Lowest Temperature History</h3>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Room / Area</th>
+          <th>Standard</th>
+          <th>Today's Range</th>
+          <th>This Week's Range</th>
+          <th>This Month's Range</th>
+          <th>Latest Reading</th>
+        </tr>
+      </thead>
+      <tbody id="extremesTableBody"></tbody>
+    </table>
   </div>
  </section>
 
@@ -1282,32 +1337,32 @@ function refreshLocks(){
  areas.forEach((a,i)=>{
   const rec=data.slice().reverse().find(r=>r.area===a[0]&&r.date===stamp.date&&String(r.time||"").slice(0,2)===stamp.time.slice(0,2));
   rl.locked[i]=rec?{time:rec.time,date:rec.date,rec}:null;
-  const isLocked=Boolean(rec);
+  const isRecorded=Boolean(rec);
   
   const tin=$("tin"+i), th=$("th"+i), cal=$("cal"+i), rlb=$("rlb"+i), nab=$("nab"+i), sbtn=$("savebtn"+i);
   if(tin){
-    tin.disabled=isLocked;
-    if(isLocked && rec){
+    tin.disabled=false;
+    if(isRecorded && !tin.value && rec){
       tin.value=rec.temp==="N/A"?"N/A":(typeof rec.temp==="number"?rec.temp+"°C":rec.temp);
     }
   }
   if(th){
-    th.disabled=isLocked;
-    if(isLocked && rec) th.value=rec.thermo||"";
+    th.disabled=false;
+    if(isRecorded && !th.value && rec) th.value=rec.thermo||"";
   }
   if(cal){
-    if(isLocked && rec){
+    if(isRecorded && !cal.value && rec){
       cal.value=rec.calibration||"";
       if(rec.calibration==="N/A") cal.type="text";
     }
-    cal.disabled=isLocked||(cal.value==="N/A");
+    cal.disabled=(cal.value==="N/A");
   }
-  if(rlb) rlb.disabled=isLocked;
-  if(nab) nab.disabled=isLocked;
+  if(rlb) rlb.disabled=false;
+  if(nab) nab.disabled=false;
   if(sbtn){
-    sbtn.disabled=isLocked;
-    sbtn.textContent=isLocked?"✔️ Saved":"💾 Save";
-    sbtn.className="saverowbtn "+(isLocked?"saved":"");
+    sbtn.disabled=false;
+    sbtn.textContent=isRecorded?"💾 Save / Update":"💾 Save";
+    sbtn.className="saverowbtn "+(isRecorded?"saved":"");
   }
   paintRow(i);
  });
@@ -1339,10 +1394,6 @@ function applyQuickFill(){
 
 // Single Room Save Action
 function saveSingleRoom(i){
-  if(rl.locked[i]){
-    alert("This room is already recorded for this hour and date.");
-    return;
-  }
   const mon=$("monitor").value;
   const sh=$("shift").value;
   if(!mon){
@@ -1360,6 +1411,12 @@ function saveSingleRoom(i){
   if(sopRadio && sopRadio.value === "NO"){
     alert("⚠️ SANITATION PROTOCOL: The thermometer is NOT cleaned & sanitized. Please Clean and Sanitize the probe first before use!");
     return;
+  }
+
+  // Ensure rl.state[i] is evaluated if user typed into tin
+  const tinVal = $("tin"+i).value.trim();
+  if(!rl.state[i] && tinVal){
+    onTemp(i);
   }
 
   const s=rl.state[i];
@@ -1413,10 +1470,16 @@ function saveSingleRoom(i){
 
   if(th!=="N/A") saveThermoMem(i, th, cal);
 
-  data.push(rec);
+  const existingIdx = data.findIndex(r=>r.area===a[0]&&r.date===rec.date&&String(r.time||"").slice(0,2)===rec.time.slice(0,2));
+  if(existingIdx !== -1){
+    data[existingIdx] = rec;
+    toast(`Updated ${a[0]}: ${rec.temp}${s.isNA?"":"°C"}`);
+  } else {
+    data.push(rec);
+    toast(`Saved ${a[0]}: ${rec.temp}${s.isNA?"":"°C"}`);
+  }
   save();
   refreshLocks();
-  toast(`Saved ${a[0]}: ${rec.temp}${s.isNA?"":"°C"}`);
   focusSheet(rec);
 }
 
@@ -1487,7 +1550,12 @@ $("entryForm").addEventListener("submit",e=>{
    verifyDate:"",
    decisionRemarks:""
   };
-  data.push(rec);
+  const existingIdx = data.findIndex(r=>r.area===a[0]&&r.date===rec.date&&String(r.time||"").slice(0,2)===rec.time.slice(0,2));
+  if(existingIdx !== -1){
+    data[existingIdx] = rec;
+  } else {
+    data.push(rec);
+  }
   created.push(rec);
  });
 
@@ -1499,11 +1567,12 @@ $("entryForm").addEventListener("submit",e=>{
 });
 
 function showTab(tab){
- ["entry","records","counter","verify"].forEach(id=>$(id).classList.toggle("hidden",id!==tab));
+ ["entry","records","counter","verify","extremes"].forEach(id=>$(id).classList.toggle("hidden",id!==tab));
  window.scrollTo({top:0,behavior:"smooth"});
  if(tab==="records"){renderSheet()}
  else if(tab==="counter"){renderCounter();renderCounterSheet();renderCounterSigs()}
  else if(tab==="verify"){renderWeeks()}
+ else if(tab==="extremes"){updateTemperatureExtremes()}
 }
 function badge(st){
  let displaySt = st;
