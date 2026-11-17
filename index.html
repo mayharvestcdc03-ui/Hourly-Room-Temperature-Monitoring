@@ -261,6 +261,122 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
 
 
 /* ===== Real-Time Temperature Extremes Dashboard ===== */
+
+/* ===== Review Section Collapsible Shift Groups ===== */
+.rev-group-card {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+.rev-group-card.has-dev {
+  border-color: #f87171;
+  background: #fffafa;
+}
+.rev-group-header {
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  background: #f8fafc;
+  user-select: none;
+  transition: background 0.15s;
+}
+.rev-group-header:hover {
+  background: #f1f5f9;
+}
+.rev-group-card.has-dev .rev-group-header {
+  background: #fef2f2;
+}
+.rev-group-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--navy);
+}
+.rev-expand-icon {
+  font-size: 11px;
+  transition: transform 0.2s ease;
+  display: inline-block;
+  color: #64748b;
+  width: 14px;
+  text-align: center;
+}
+.rev-expand-icon.open {
+  transform: rotate(90deg);
+}
+.rev-pill {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.rev-pill.shift {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.rev-pill.mon {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+.rev-group-counts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rev-stat-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+.rev-stat-badge.count {
+  background: #f1f5f9;
+  color: #475569;
+}
+.rev-stat-badge.ok {
+  background: #dcfce7;
+  color: #15803d;
+}
+.rev-stat-badge.dev {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.rev-group-body {
+  padding: 10px 14px;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+  overflow-x: auto;
+}
+.rev-sub-table {
+  width: 100%;
+  font-size: 11.5px;
+  border-collapse: collapse;
+}
+.rev-sub-table th, .rev-sub-table td {
+  padding: 5px 8px;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+}
+.rev-sub-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+}
+.rev-sub-table tr.dev-row {
+  background: #fff5f5;
+  color: #991b1b;
+}
+
 .hl-summary-container {
   margin: 16px 0 20px;
   background: #ffffff;
@@ -741,6 +857,19 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
    <div id="weekFlagsBlock" class="hidden">
      <h4 style="margin:10px 0 6px;color:#a42b21;font-size:12.5px">⚠️ Temperature Deviations in this Week</h4>
      <div class="tablewrap"><table style="font-size:11.5px"><thead style="background:#fee2e2"><tr><th>Date / Time</th><th>Area</th><th>Reading</th><th>Standard</th><th>Monitor</th><th>Remarks</th></tr></thead><tbody id="weekFlags"></tbody></table></div>
+   </div>
+
+   
+   <!-- Collapsible Shift Entries Grouped by Date, Shift, and Monitored By -->
+   <div style="margin:14px 0 8px">
+     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+       <h4 style="margin:0;color:var(--navy);font-size:13px">📁 Monitoring Records by Date, Shift &amp; Monitor</h4>
+       <div style="display:flex;gap:6px">
+         <button type="button" class="secondary" onclick="toggleAllRevGroups(true)" style="padding:2px 8px;font-size:11px">Expand All</button>
+         <button type="button" class="secondary" onclick="toggleAllRevGroups(false)" style="padding:2px 8px;font-size:11px">Collapse All</button>
+       </div>
+     </div>
+     <div id="weekShiftsList"></div>
    </div>
 
    <!-- Existing Review Result (shows reviewer name, date, remarks, and signature image) -->
@@ -1961,6 +2090,70 @@ function removeSheetSig(key,i){
  if(l)focusSheet(l);else{$("sheetDate").value=currentStamp().date;$("sheetShift").value="Day Shift"}
 })();
 $("sheetDate").addEventListener("input",renderSheet);$("sheetShift").addEventListener("input",renderSheet);
+
+function downloadSheetPDF(){
+  showTab('records');
+  const d = $("sheetDate").value || currentStamp().date;
+  const sh = $("sheetShift").value || "Day Shift";
+  renderSheet();
+
+  const el = $("sheetBlock");
+  if(!el || !$("sheetTable").innerHTML.trim()){
+    alert("Please select a date and shift with monitoring records first.");
+    return;
+  }
+
+  toast("Generating PDF file... Please wait.");
+  if(window.html2pdf){
+    const opt = {
+      margin:       [4, 4, 4, 4],
+      filename:     `MHC_Room_Temp_Sheet_${d}_${sh.replace(/\s+/g,'_')}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+    html2pdf().set(opt).from(el).save().then(()=>{
+      toast("PDF downloaded successfully!");
+    }).catch(err=>{
+      console.warn("html2pdf failed, falling back to printSheet:", err);
+      printSheet('ps');
+    });
+  } else {
+    printSheet('ps');
+  }
+}
+
+function downloadCounterPDF(){
+  showTab('counter');
+  const d = $("cSheetDate").value || currentStamp().date;
+  renderCounterSheet();
+
+  const el = $("counterSheetBlock");
+  if(!el || !$("counterSheet").innerHTML.trim()){
+    alert("Please select a counter check date with records first.");
+    return;
+  }
+
+  toast("Generating Counter Check PDF... Please wait.");
+  if(window.html2pdf){
+    const opt = {
+      margin:       [4, 4, 4, 4],
+      filename:     `MHC_Counter_Check_Sheet_${d}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+    html2pdf().set(opt).from(el).save().then(()=>{
+      toast("Counter Check PDF downloaded successfully!");
+    }).catch(err=>{
+      console.warn("html2pdf failed, falling back to printSheet:", err);
+      printSheet('psc');
+    });
+  } else {
+    printSheet('psc');
+  }
+}
+
 function printSheet(c){c=c||"ps";document.body.classList.add(c);window.print();document.body.classList.remove(c)}
 
 function renderCounterSheet(){
@@ -2075,6 +2268,80 @@ function openWeek(k){
    $("weekFlags").innerHTML=fl.map(r=>`<tr><td>${esc(r.date)} ${esc(r.time)}</td><td><b>${esc(r.area)}</b></td><td>${typeof r.temp==='number'?r.temp.toFixed(1)+'°C':r.temp} (${badge(r.assessment)})</td><td>${esc(r.standard)}</td><td>${esc(r.monitor)} (${esc(r.shift)})</td><td>${esc(r.remarks||"—")}</td></tr>`).join("");
  }
 
+ // Group records by Date, Shift, and Monitored By
+ const groups={};
+ w.rs.forEach(r=>{
+   const gKey = sd(r)+"|"+r.shift+"|"+(r.monitor||"Unassigned").trim();
+   if(!groups[gKey]){
+     groups[gKey] = { date: sd(r), shift: r.shift, monitor: (r.monitor||"Unassigned").trim(), recs: [] };
+   }
+   groups[gKey].recs.push(r);
+ });
+
+ const gList = Object.values(groups).sort((a,b)=>{
+   if(a.date !== b.date) return b.date.localeCompare(a.date);
+   const shOrd = {"Day Shift":0,"Mid Shift":1,"Night Shift":2};
+   return (shOrd[a.shift]??9)-(shOrd[b.shift]??9);
+ });
+
+ // Render Collapsible Shift Cards (Nakatago / Collapsed by default)
+ const listContainer = $("weekShiftsList");
+ if(listContainer){
+   listContainer.innerHTML = gList.map((g, gIdx)=>{
+     const gDevs = g.recs.filter(r=>r.assessment==="Deviation").length;
+     const gId = "wg" + gIdx;
+     return `<div class="rev-group-card ${gDevs?'has-dev':''}" id="card-${gId}">
+       <div class="rev-group-header" onclick="toggleRevGroup('${gId}')">
+         <div class="rev-group-info">
+           <span class="rev-expand-icon" id="rev-icon-${gId}">▶</span>
+           <b>📅 ${fmtD(g.date)}</b>
+           <span class="rev-pill shift">${esc(g.shift)}</span>
+           <span class="rev-pill mon">👤 Monitored by: <b>${esc(g.monitor)}</b></span>
+         </div>
+         <div class="rev-group-counts">
+           <span class="rev-stat-badge count">${g.recs.length} rooms</span>
+           ${gDevs ? `<span class="rev-stat-badge dev">⚠️ ${gDevs} Deviation(s)</span>` : '<span class="rev-stat-badge ok">✅ Normal</span>'}
+           <button type="button" class="secondary" style="padding:2px 8px;font-size:11px;margin-left:6px" onclick="event.stopPropagation();gotoSheet('${g.date}','${esc(g.shift)}')">Open Sheet</button>
+         </div>
+       </div>
+       <div class="rev-group-body hidden" id="rev-body-${gId}">
+         <table class="rev-sub-table">
+           <thead>
+             <tr>
+               <th>#</th>
+               <th>Room / Area</th>
+               <th>Standard</th>
+               <th>ITME Code</th>
+               <th>Calibration Date</th>
+               <th>Actual °C</th>
+               <th>Time</th>
+               <th>Assessment</th>
+               <th>Remarks</th>
+             </tr>
+           </thead>
+           <tbody>
+             ${g.recs.map((r, rIdx)=>{
+               const isNA = r.temp === "N/A" || String(r.assessment).includes("N/A");
+               const tempVal = isNA ? '<b style="color:#64748b">N/A</b>' : `<b>${typeof r.temp==='number'?r.temp.toFixed(1):r.temp}°C</b>`;
+               return `<tr class="${r.assessment==='Deviation'?'dev-row':''}">
+                 <td>${rIdx+1}</td>
+                 <td><b>${esc(r.area)}</b></td>
+                 <td>${esc(r.standard)}</td>
+                 <td>${esc(r.thermo)}</td>
+                 <td>${esc(r.calibration)}</td>
+                 <td>${tempVal}</td>
+                 <td>${esc(r.time)}</td>
+                 <td>${badge(r.assessment)}</td>
+                 <td>${esc(r.remarks||'—')}</td>
+               </tr>`;
+             }).join("")}
+           </tbody>
+         </table>
+       </div>
+     </div>`;
+   }).join("") || '<div class="notice">No shift entries recorded in this week.</div>';
+ }
+
  // Show previous review and signature if already reviewed
  let done=(weeklyVer[k]||[]);
  $("weekDone").innerHTML=done.map(v=>`<div style="background:#fff;border:1.5px solid #22c55e;border-radius:8px;padding:12px;margin:8px 0;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
@@ -2116,6 +2383,20 @@ function reOpenReviewForm(){
  initPad($("vPad"));
  clearPad($("vPad"));
 }
+
+window.toggleRevGroup=function(gId){
+ const body=$("rev-body-"+gId);
+ const icon=$("rev-icon-"+gId);
+ if(!body)return;
+ const isOpen=!body.classList.contains("hidden");
+ body.classList.toggle("hidden",isOpen);
+ if(icon) icon.classList.toggle("open",!isOpen);
+};
+
+window.toggleAllRevGroups=function(open){
+ document.querySelectorAll(".rev-group-body").forEach(b=>b.classList.toggle("hidden",!open));
+ document.querySelectorAll(".rev-expand-icon").forEach(i=>i.classList.toggle("open",open));
+};
 function closeWeek(){$("weekEditor").classList.add("hidden");selectedWeek=null}
 function submitWeek(){
  if(!selectedWeek)return;let k=selectedWeek,w=weekStatus(k);
