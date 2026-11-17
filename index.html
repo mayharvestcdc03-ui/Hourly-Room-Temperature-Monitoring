@@ -36,7 +36,7 @@ header{
   border-bottom:3px solid #38bdf8;
 }
 .brand-bar{
-  max-width:1450px;
+  max-width:1500px;
   margin:auto;
   display:flex;
   align-items:center;
@@ -98,7 +98,7 @@ header{
   font-weight:600;
 }
 
-.wrap{max-width:1450px;margin:20px auto;padding:0 18px}
+.wrap{max-width:1500px;margin:20px auto;padding:0 18px}
 .toolbar,.panel{
   background:white;
   border:1px solid var(--line);
@@ -136,11 +136,11 @@ input,select,textarea{
   width:100%;
   border:1px solid #cbd6df;
   border-radius:7px;
-  padding:10px;
+  padding:8px 10px;
   background:#fff;
   color:var(--ink);
   font:inherit;
-  min-height:39px;
+  min-height:38px;
   transition:border-color 0.2s, box-shadow 0.2s;
 }
 input:focus,select:focus,textarea:focus{outline:2px solid #38bdf8;border-color:var(--blue)}
@@ -171,6 +171,7 @@ td .status{white-space:nowrap}
 .notice{padding:10px 12px;border-radius:8px;background:#eef6fa;color:#31576b;margin:10px 0;font-size:12px}
 .alert{background:#fff0ed;color:#96382c}
 .good{background:#eaf7ef;color:#17643b}
+
 .sheet{min-width:0;width:max-content;border:1px solid #555;border-collapse:collapse}
 .sheet th,.sheet td{border:1px solid #777;padding:5px 6px;text-align:center;font-size:11px;position:static;vertical-align:middle}
 .sheet th{background:#f5f8fa;color:#203040}
@@ -187,6 +188,9 @@ td .status{white-space:nowrap}
 .sheet .rd .tm{font-size:11px;font-weight:600;color:#203040}
 .sheet .rd.dev{background:#fde9e7;color:#a42b21}
 .sheet .rd.dev .tm{color:#a42b21}
+.sheet .rd.na{background:#f1f5f9;color:#64748b;border:1px dashed #cbd5e1}
+.sheet .rd.na .tm{color:#64748b}
+
 .sigpad{display:block;width:100%;max-width:520px;height:150px;border:1.5px dashed #8aa0ad;border-radius:8px;background:#fff;touch-action:none;margin:8px 0}
 .sigrow{display:flex;gap:28px;flex-wrap:wrap;margin-top:16px}
 .sigrow>div{width:220px}
@@ -198,6 +202,8 @@ td .status{white-space:nowrap}
 .sheetbar .field{min-width:180px}
 .legend{font-size:11px;color:var(--muted)}
 .legend b{display:inline-block;width:12px;height:12px;background:#fde9e7;border:1px solid #a42b21;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.legend b.legend-na{background:#f1f5f9;border:1px dashed #94a3b8}
+
 @page{size:landscape;margin:8mm}
 @media print{body.psc .signctl,body.psc .noprint{display:none!important}}
 @media print{
@@ -217,45 +223,105 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
 .counter-sign-display img{display:block;width:88px;height:30px;object-fit:contain;background:#fff;border:1px solid #d8dee6;border-radius:4px;margin-top:3px}
 .counter-sign-display small{display:block;color:var(--muted);font-size:10px}
 
-/* ===== Room list entry ===== */
+/* ===== Room list entry (Updated with per-room Item Code, Calib, N/A, and Save) ===== */
 .clockbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 14px;color:var(--muted);font-size:12px}
 .clockbar b{font-variant-numeric:tabular-nums;color:var(--navy);font-size:14px}
-.rooms{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:8px}
-.rl-head,.rl-row{display:grid;grid-template-columns:36px minmax(190px,1.7fr) minmax(150px,1.1fr) minmax(175px,1.1fr) minmax(125px,.8fr) minmax(120px,.8fr);gap:10px;align-items:center;padding:9px 12px}
-.rl-head{background:#f5f8fa;font-size:11px;font-weight:700;color:#506273}
+.rooms{border:1px solid var(--line);border-radius:10px;overflow-x:auto;margin-top:8px;background:#fff}
+
+.rl-head,.rl-row{
+  display:grid;
+  grid-template-columns:32px minmax(170px,1.4fr) minmax(115px,0.9fr) minmax(130px,1.1fr) minmax(125px,1fr) minmax(175px,1.3fr) minmax(75px,0.6fr) minmax(95px,0.7fr) minmax(88px,0.7fr);
+  gap:8px;
+  align-items:center;
+  padding:9px 12px;
+  min-width:1050px;
+}
+.rl-head{background:#f5f8fa;font-size:11px;font-weight:700;color:#506273;border-bottom:1.5px solid var(--line)}
 .rl-row{border-top:1px solid var(--line);transition:background .2s}
-.rl-row.filled{background:#f4fafc}.rl-row.dev{background:#fff4f1}.rl-row.locked{background:#f1f4f7}
+.rl-row.filled{background:#f4fafc}.rl-row.dev{background:#fff4f1}.rl-row.locked{background:#f8fafc}.rl-row.na-row{background:#f8fafc}
 .rl-no{color:var(--muted);font-weight:700;text-align:center}
-.rl-room{font-weight:700;color:var(--navy)}
-.rl-std{font-size:12px;color:#34495a}
-.tempbox{display:flex;gap:6px}
-.tin{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+.rl-room{font-weight:700;color:var(--navy);font-size:13px}
+.rl-std{font-size:11.5px;color:#34495a;font-weight:600}
+
+.field-with-btn{display:flex;gap:4px;align-items:center}
+.nabtn{
+  padding:0 8px;
+  min-height:36px;
+  background:#e2e8f0;
+  color:#334155;
+  font-size:11px;
+  font-weight:700;
+  border-radius:6px;
+  border:1px solid #cbd5e1;
+  cursor:pointer;
+  transition:all 0.15s;
+  white-space:nowrap;
+}
+.nabtn:hover{background:#cbd5e1}
+.nabtn.active{background:#334155;color:#fff;border-color:#1e293b}
+.nabtn:disabled{opacity:0.4;cursor:not-allowed}
+
+.tempbox{display:flex;gap:4px;align-items:center}
+.tin{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;min-width:75px}
 .tin:disabled{background:#eef2f5;color:#34495a}
-.signbtn{padding:0 12px;min-height:39px;background:#e8eef3;color:var(--navy);font-size:15px}
+.th-in{font-size:12.5px;font-weight:600}
+.cal-in{font-size:12px;padding:6px 7px}
+.signbtn{padding:0 9px;min-height:36px;background:#e8eef3;color:var(--navy);font-size:15px;border-radius:6px}
+
+.saverowbtn{
+  background:#16804a;
+  color:white;
+  border:0;
+  border-radius:6px;
+  padding:7px 11px;
+  font-weight:700;
+  font-size:11.5px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  white-space:nowrap;
+  box-shadow:0 1px 3px rgba(0,0,0,0.12);
+  transition:all 0.15s;
+}
+.saverowbtn:hover{background:#12643b}
+.saverowbtn.saved{background:#64748b;color:#fff;box-shadow:none;cursor:default}
+.saverowbtn:disabled{opacity:0.5;cursor:not-allowed}
+
 .rl-time{font-size:12px;line-height:1.3;visibility:hidden}
 .rl-time.on{visibility:visible;animation:rlfade .25s ease-out}
-.rl-time b{display:block;font-size:14px;font-variant-numeric:tabular-nums;color:var(--navy)}
-.rl-time small{display:block}
-.rl-rem{grid-column:2 / -1}
+.rl-time b{display:block;font-size:13px;font-variant-numeric:tabular-nums;color:var(--navy)}
+.rl-time small{display:block;font-size:10.5px}
+.rl-rem{grid-column:2 / -1;margin-top:2px}
 @keyframes rlfade{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.rl-time.on{animation:none}}
-@media(max-width:760px){
- .rl-head{display:none}
- .rl-row{grid-template-columns:30px 1fr 1fr;row-gap:8px}
- .rl-room{grid-column:2 / -1}.rl-std{grid-column:2 / -1}.rl-temp{grid-column:1 / -1}
- .rl-time{grid-column:1 / 3}.rl-stat{grid-column:3;text-align:right}.rl-rem{grid-column:1 / -1}
+
+/* Toast Notification */
+.toast-msg{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#0e2940;
+  color:#fff;
+  padding:12px 20px;
+  border-radius:8px;
+  font-weight:600;
+  font-size:13px;
+  box-shadow:0 4px 18px rgba(0,0,0,0.25);
+  border-left:4px solid #16804a;
+  opacity:0;
+  transform:translateY(8px);
+  transition:all 0.25s ease;
+  pointer-events:none;
+  z-index:9999;
 }
+.toast-msg.show{opacity:1;transform:translateY(0)}
 
 /* ===== Counter check room list ===== */
-.rl-head.crl,.rl-row.crl-row{grid-template-columns:36px minmax(170px,1.5fr) minmax(125px,1fr) minmax(190px,1.2fr) minmax(165px,1.1fr) minmax(105px,.7fr) minmax(130px,.8fr)}
+.rl-head.crl,.rl-row.crl-row{grid-template-columns:36px minmax(170px,1.5fr) minmax(125px,1fr) minmax(190px,1.2fr) minmax(165px,1.1fr) minmax(105px,.7fr) minmax(130px,.8fr);min-width:890px}
 .rl-mon{font-size:12px;line-height:1.3;color:#34495a}
 .rl-mon b{font-size:14px;color:var(--navy);font-variant-numeric:tabular-nums}
 .rl-mon small{display:block}
 .rl-stat small{display:block;margin-top:3px}
-@media(max-width:760px){
- .rl-row.crl-row{grid-template-columns:30px 1fr 1fr}
- .rl-row.crl-row .rl-mon{grid-column:2 / -1}
-}
 </style>
 </head>
 <body>
@@ -288,7 +354,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
  <section id="dashboard">
   <div class="cards">
    <div class="metric"><b id="totalCount">0</b><span>Total monitoring entries</span></div>
-   <div class="metric"><b id="compliantCount">0</b><span>Within temperature standard</span></div>
+   <div class="metric"><b id="compliantCount">0</b><span>Within standard / N/A</span></div>
    <div class="metric"><b id="deviationCount">0</b><span>Temperature deviations</span></div>
    <div class="metric"><b id="pendingCount">0</b><span>Awaiting verification</span></div>
   </div>
@@ -296,29 +362,55 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
 
  <section id="entry" class="panel">
   <h2>1. Hourly Monitoring Data Entry</h2>
-  <div class="notice">Fill in the details below, then type the reading beside each room. The &deg;C is added automatically, so just type the number (use the &plusmn; button for negative readings). The time is captured the moment you enter a reading. Only one record is allowed per room per hour and date. Records are saved locally and synced live to cloud storage.</div>
+  <div class="notice">
+    <b>Instructions:</b> Select Monitor &amp; Shift below. Each room has its own <b>Gauge/Item Code</b> and <b>Calibration Date</b> (remembered automatically per room). Click <b>N/A</b> if the room is not in operation or if no gauge is used. You can save each room individually using the <b>💾 Save</b> button on that row, or use the button at the bottom to save all filled rooms. Records are synced across all devices live.
+  </div>
   <form id="entryForm">
    <div class="grid">
     <div class="field"><label for="monitor">PERSON WHO MONITORS *</label><select id="monitor" required><option value="">Select personnel</option></select></div>
     <div class="field"><label for="shift">SHIFT *</label><select id="shift" required><option value="">Select shift</option><option value="Day Shift">Day Shift (5:00 AM &ndash; 2:00 PM)</option><option value="Mid Shift">Mid Shift (1:00 PM &ndash; 10:00 PM)</option><option value="Night Shift">Night Shift (9:00 PM &ndash; 6:00 AM)</option></select></div>
-    <div class="field"><label for="thermo">THERMOMETER ITEM CODE *</label><input id="thermo" placeholder="Enter item code" required></div>
-    <div class="field"><label for="calibration">CALIBRATION DATE *</label><input type="date" id="calibration" required></div>
+    <div class="field"><label for="quickThermo">QUICK-FILL ITEM CODE (OPTIONAL)</label><input id="quickThermo" placeholder="Type here to bulk-fill below"></div>
+    <div class="field">
+      <label for="quickCalib">QUICK-FILL CALIB DATE</label>
+      <div style="display:flex;gap:6px">
+        <input type="date" id="quickCalib">
+        <button type="button" class="secondary" onclick="applyQuickFill()" title="Apply to all unfilled rooms" style="padding:0 12px;font-size:12px;white-space:nowrap">Apply All</button>
+      </div>
+    </div>
    </div>
    <h3 style="margin-top:22px">Rooms / Areas to Monitor</h3>
    <div class="clockbar">Current date and time: <b id="liveClock">--</b></div>
    <div class="rooms">
-    <div class="rl-head"><div>#</div><div>ROOM / AREA</div><div>STANDARD</div><div>ACTUAL TEMPERATURE</div><div>TIME RECORDED</div><div>STATUS</div></div>
+    <div class="rl-head">
+      <div>#</div>
+      <div>ROOM / AREA</div>
+      <div>STANDARD</div>
+      <div>GAUGE / ITEM CODE</div>
+      <div>CALIB DATE</div>
+      <div>ACTUAL TEMPERATURE</div>
+      <div>TIME</div>
+      <div>STATUS</div>
+      <div>ACTION</div>
+    </div>
     <div id="roomRows"></div>
    </div>
-   <div id="assessment" class="notice">Type a reading beside any room. Its status and time will appear here and in the row.</div>
-   <div class="actions"><button type="submit">Save Monitoring Records</button><button type="reset" class="secondary" onclick="setTimeout(resetAssessment,0)">Clear Form</button></div>
+   <div id="assessment" class="notice">Type a reading or click N/A beside any room. You can click <b>💾 Save</b> on any room row to submit it immediately!</div>
+   <div class="actions">
+     <button type="submit">Save All Filled Rooms</button>
+     <button type="reset" class="secondary" onclick="setTimeout(resetAssessment,0)">Clear Form</button>
+   </div>
   </form>
  </section>
 
  <section id="records" class="panel hidden">
   <h2>2. Monitoring Records</h2>
   <div id="sheetBlock">
-   <div class="sheetbar"><div class="field"><label for="sheetDate">MONITORING DATE</label><input type="date" id="sheetDate"></div><div class="field"><label for="sheetShift">SHIFT</label><select id="sheetShift"><option value="Day Shift">Day Shift (5:00 AM – 2:00 PM)</option><option value="Mid Shift">Mid Shift (1:00 PM – 10:00 PM)</option><option value="Night Shift">Night Shift (9:00 PM – 6:00 AM)</option></select></div><button class="secondary" onclick="printSheet()">Print Sheet</button><span class="legend"><b></b>Out of temperature standard • Tap a reading to view its details</span></div>
+   <div class="sheetbar">
+     <div class="field"><label for="sheetDate">MONITORING DATE</label><input type="date" id="sheetDate"></div>
+     <div class="field"><label for="sheetShift">SHIFT</label><select id="sheetShift"><option value="Day Shift">Day Shift (5:00 AM – 2:00 PM)</option><option value="Mid Shift">Mid Shift (1:00 PM – 10:00 PM)</option><option value="Night Shift">Night Shift (9:00 PM – 6:00 AM)</option></select></div>
+     <button class="secondary" onclick="printSheet()">Print Sheet</button>
+     <span class="legend"><b></b>Out of standard • <b class="legend-na"></b>N/A (No Operation) • Tap a reading to view its details</span>
+   </div>
    <div class="tablewrap"><table id="sheetTable" class="sheet"></table></div>
    <div id="sheetSigs" class="sigrow"></div>
    <div class="signctl">
@@ -333,7 +425,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
   <div class="filters">
    <div class="field"><label>FILTER BY DATE</label><input type="date" id="filterDate"></div>
    <div class="field"><label>FILTER BY AREA</label><select id="filterArea"><option value="">All areas</option></select></div>
-   <div class="field"><label>FILTER BY STATUS</label><select id="filterStatus"><option value="">All statuses</option><option>Compliant</option><option>Deviation</option><option>Pending Verification</option><option>Verified</option><option>Rejected</option></select></div>
+   <div class="field"><label>FILTER BY STATUS</label><select id="filterStatus"><option value="">All statuses</option><option>Compliant</option><option>Deviation</option><option>N/A (No Operation)</option><option>Pending Verification</option><option>Verified</option><option>Rejected</option></select></div>
    <div class="field"><label>SEARCH PERSON / ITEM CODE</label><input id="searchText" placeholder="Search..."></div>
   </div>
   <div class="tablewrap"><table><thead><tr><th>Date / Time</th><th>Area</th><th>Actual °C</th><th>Standard</th><th>PLI Monitor / OIC-PLI Counter Check</th><th>Thermometer / Calibration</th><th>Assessment</th><th>Verification</th><th>Action</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
@@ -341,7 +433,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
 
  <section id="counter" class="panel hidden">
   <h2>3. Counter Checking (per Area)</h2>
-  <div class="notice">Counter checking is an independent check of the room temperature. The counter checker reads the temperature of the area using his/her own thermometer, and the system compares it with the latest hourly monitoring reading of the same area. A difference of more than <b id="tolText"></b> is flagged as a discrepancy. The counter checker must be a different person from the one who monitored. Fill in the details, then type the counter check reading beside each room &ndash; the &deg;C and the time are added automatically. Records are synced across devices.</div>
+  <div class="notice">Counter checking is an independent check of the room temperature. The counter checker reads the temperature of the area using his/her own thermometer, and the system compares it with the latest hourly monitoring reading of the same area. A difference of more than <b id="tolText"></b> is flagged as a discrepancy. Fill in the details, then type the counter check reading beside each room &ndash; the &deg;C and the time are added automatically. Records are synced across devices.</div>
   <h3 id="counterFormTitle" style="margin-top:22px">New Counter Check</h3>
   <form id="counterForm">
    <div class="grid">
@@ -421,6 +513,8 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
  <footer>May Harvest Corporation • Hourly Room Temperature Monitoring System • Real-Time Cloud Sync</footer>
 </div>
 
+<div class="toast-msg" id="toastMsg"></div>
+
 <script>
 // Base Data Structures
 const personnel=[
@@ -453,13 +547,33 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pad=n=>String(n).padStart(2,"0");
 
+function toast(msg){
+  const el=$("toastMsg");
+  if(!el)return;
+  el.textContent=msg;
+  el.classList.add("show");
+  setTimeout(()=>el.classList.remove("show"),2200);
+}
+
 // Local State
 let data=JSON.parse(localStorage.getItem("hourlyTempRecords")||"[]");
 let cdata=JSON.parse(localStorage.getItem("hourlyTempCounterChecks")||"[]");
 let sheetSigs=JSON.parse(localStorage.getItem("hourlyTempSheetSigs")||"{}");
 let counterSigs=JSON.parse(localStorage.getItem("hourlyTempCounterSheetSigs")||"{}");
 let weeklyVer=JSON.parse(localStorage.getItem("hourlyTempWeeklyVerifications")||"{}");
+let roomThermos=JSON.parse(localStorage.getItem("mhc_room_thermos_v1")||"{}");
 let selectedVerify=null, selectedWeek=null;
+
+function saveThermoMem(i, thermo, cal){
+  roomThermos[i]={thermo, cal};
+  try{localStorage.setItem("mhc_room_thermos_v1", JSON.stringify(roomThermos))}catch(e){}
+}
+function getMemThermo(i){
+  return roomThermos[i]?.thermo||"";
+}
+function getMemCal(i){
+  return roomThermos[i]?.cal||"";
+}
 
 // Cloud Sync Engine
 let syncTimeout = null, isPulling = false;
@@ -625,11 +739,9 @@ function currentStamp(){
 }
 function standard(a){return a[3]}
 function isCompliant(area,temp){
+  if(temp==="N/A") return true;
   let a=areas.find(x=>x[0]===area);
   return a[1]!==null?temp>=a[1]&&temp<=a[2]:temp<=a[2];
-}
-function hasHourlyRecord(area,stamp){
-  return data.some(r=>r.area===area&&r.date===stamp.date&&String(r.time||"").slice(0,2)===stamp.time.slice(0,2));
 }
 
 function save(){
@@ -644,9 +756,10 @@ function saveC(){
   triggerServerSync();
 }
 
-/* ===== Room list entry ===== */
+/* ===== Room list entry (with per-room Item Code, Calib, N/A, and Save) ===== */
 const rl={state:[],locked:[]};
 function cleanTemp(s){
+  if(String(s).toUpperCase()==="N/A") return "N/A";
   s=String(s).replace(/[^0-9.\-]/g,"");
   const neg=s.charAt(0)==="-";
   s=s.replace(/-/g,"");
@@ -655,17 +768,60 @@ function cleanTemp(s){
   return (neg?"-":"")+s;
 }
 function setTemp(inp,raw){
+  if(raw==="N/A"){
+    inp.value="N/A";
+    return;
+  }
   inp.value=raw===""?"":raw+"\u00B0C";
   try{inp.setSelectionRange(raw.length,raw.length)}catch(_){}
 }
 function clampCaret(inp){
+  if(inp.value==="N/A") return;
   setTimeout(()=>{
     const n=cleanTemp(inp.value).length;
     try{if(inp.selectionStart>n||inp.selectionEnd>n)inp.setSelectionRange(n,n)}catch(_){}
   },0);
 }
+
 function buildRoomList(){
- $("roomRows").innerHTML=areas.map((a,i)=>`<div class="rl-row" id="rl${i}"><div class="rl-no">${i+1}</div><div class="rl-room">${esc(a[0])}</div><div class="rl-std">${esc(a[3])}</div><div class="rl-temp"><div class="tempbox"><button type="button" class="signbtn" id="rlb${i}" data-i="${i}" tabindex="-1" title="Switch between negative and positive" aria-label="Toggle minus sign">&plusmn;</button><input class="tin" id="tin${i}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter temp" aria-label="Actual temperature for ${esc(a[0])}"></div></div><div class="rl-time" id="rlt${i}"><b></b><small></small></div><div class="rl-stat" id="rls${i}"></div><div class="rl-rem hidden" id="rlr${i}"><input id="rlri${i}" placeholder="Remarks / action taken (out of standard)"></div></div>`).join("");
+ $("roomRows").innerHTML=areas.map((a,i)=>{
+   const memTh=getMemThermo(i);
+   const memCal=getMemCal(i);
+   return `<div class="rl-row" id="rl${i}">
+     <div class="rl-no">${i+1}</div>
+     <div class="rl-room">${esc(a[0])}</div>
+     <div class="rl-std">${esc(a[3])}</div>
+     
+     <div class="rl-itemcode">
+       <div class="field-with-btn">
+         <input class="th-in" id="th${i}" data-i="${i}" placeholder="Item code" value="${esc(memTh)}" oninput="onItemCodeInput(${i})">
+         <button type="button" class="nabtn" title="Set gauge code to N/A" onclick="setItemNA(${i})">N/A</button>
+       </div>
+     </div>
+
+     <div class="rl-calib">
+       <input type="${memCal==='N/A'?'text':'date'}" class="cal-in" id="cal${i}" data-i="${i}" value="${esc(memCal)}" onchange="onCalChange(${i})" ${memCal==='N/A'?'disabled':''}>
+     </div>
+
+     <div class="rl-temp">
+       <div class="tempbox">
+         <button type="button" class="signbtn" id="rlb${i}" data-i="${i}" tabindex="-1" title="Switch negative/positive" aria-label="Toggle minus sign">&plusmn;</button>
+         <input class="tin" id="tin${i}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter temp" aria-label="Actual temperature for ${esc(a[0])}">
+         <button type="button" class="nabtn" id="nab${i}" data-i="${i}" title="Room not in operation (N/A)" onclick="setTempNA(${i})">N/A</button>
+       </div>
+     </div>
+
+     <div class="rl-time" id="rlt${i}"><b></b><small></small></div>
+     <div class="rl-stat" id="rls${i}"></div>
+     
+     <div class="rl-act">
+       <button type="button" class="saverowbtn" id="savebtn${i}" onclick="saveSingleRoom(${i})" title="Save reading for this room">💾 Save</button>
+     </div>
+
+     <div class="rl-rem hidden" id="rlr${i}"><input id="rlri${i}" placeholder="Remarks / action taken (out of standard)"></div>
+   </div>`;
+ }).join("");
+
  const box=$("roomRows");
  box.addEventListener("input",e=>{if(e.target.classList.contains("tin"))onTemp(Number(e.target.dataset.i))});
  box.addEventListener("keydown",e=>{if(e.target.classList.contains("tin"))onKey(e,Number(e.target.dataset.i))});
@@ -675,9 +831,65 @@ function buildRoomList(){
  });
  box.addEventListener("keyup",e=>{if(e.target.classList.contains("tin"))clampCaret(e.target)});
 }
+
+function setItemNA(i){
+  if(rl.locked[i]) return;
+  $("th"+i).value="N/A";
+  setCalNA(i, true);
+  saveThermoMem(i, "N/A", "N/A");
+}
+
+function onItemCodeInput(i){
+  const v=$("th"+i).value.trim();
+  if(v.toUpperCase()==="N/A"){
+    $("th"+i).value="N/A";
+    setCalNA(i, true);
+    saveThermoMem(i, "N/A", "N/A");
+  } else {
+    setCalNA(i, false);
+    saveThermoMem(i, v, $("cal"+i).value);
+  }
+}
+
+function onCalChange(i){
+  saveThermoMem(i, $("th"+i).value.trim(), $("cal"+i).value);
+}
+
+function setCalNA(i, isNA){
+  const cal=$("cal"+i);
+  if(!cal) return;
+  if(isNA){
+    cal.type="text";
+    cal.value="N/A";
+    cal.disabled=true;
+  } else {
+    if(cal.value==="N/A") cal.value="";
+    cal.type="date";
+    cal.disabled=false;
+  }
+}
+
+function setTempNA(i){
+  if(rl.locked[i]) return;
+  const inp=$("tin"+i);
+  inp.value="N/A";
+  
+  // Set item code and calibration date to N/A if empty or already N/A
+  const thInp=$("th"+i);
+  if(!thInp.value || thInp.value==="N/A"){
+    setItemNA(i);
+  }
+
+  const stamp=currentStamp();
+  rl.state[i]={temp:"N/A", isNA:true, ok:true, stamp};
+  paintRow(i);
+  updateSummary();
+}
+
 function toggleSign(i){
  if(rl.locked[i])return;
  const inp=$("tin"+i);
+ if(inp.value==="N/A") return;
  let v=cleanTemp(inp.value);
  if(v.charAt(0)==="-") v=v.slice(1);
  else v="-"+v;
@@ -697,7 +909,12 @@ function focusNext(from,dir){
  }
 }
 function onTemp(i){
- const inp=$("tin"+i), raw=cleanTemp(inp.value);
+ const inp=$("tin"+i);
+ if(inp.value==="N/A"){
+  setTempNA(i);
+  return;
+ }
+ const raw=cleanTemp(inp.value);
  setTemp(inp,raw);
  if(raw===""||raw==="-"||isNaN(Number(raw))){
   rl.state[i]=null;
@@ -708,12 +925,15 @@ function onTemp(i){
  const num=Number(raw), area=areas[i][0], ok=isCompliant(area,num);
  const prev=rl.state[i];
  const stamp=prev?prev.stamp:currentStamp();
- rl.state[i]={temp:num,ok,stamp};
+ rl.state[i]={temp:num, isNA:false, ok, stamp};
  paintRow(i);
  updateSummary();
 }
+
 function paintRow(i){
  const row=$("rl"+i), timeBox=$("rlt"+i), statBox=$("rls"+i), remBox=$("rlr"+i), s=rl.state[i];
+ const sbtn=$("savebtn"+i);
+
  if(rl.locked[i]){
   row.className="rl-row locked";
   timeBox.className="rl-time on";
@@ -721,15 +941,42 @@ function paintRow(i){
   timeBox.querySelector("small").textContent=rl.locked[i].date;
   statBox.innerHTML='<span class="status neutral" title="Already recorded for this hour and date">Recorded</span>';
   remBox.classList.add("hidden");
+  if(sbtn){
+    sbtn.disabled=true;
+    sbtn.textContent="✔️ Saved";
+    sbtn.className="saverowbtn saved";
+  }
   return;
  }
+
  if(!s){
   row.className="rl-row";
   timeBox.className="rl-time";
   statBox.innerHTML="";
   remBox.classList.add("hidden");
+  if(sbtn){
+    sbtn.disabled=false;
+    sbtn.textContent="💾 Save";
+    sbtn.className="saverowbtn";
+  }
   return;
  }
+
+ if(s.isNA){
+  row.className="rl-row filled na-row";
+  timeBox.className="rl-time on";
+  timeBox.querySelector("b").textContent=s.stamp.time;
+  timeBox.querySelector("small").textContent=s.stamp.date;
+  statBox.innerHTML='<span class="status neutral" style="font-weight:700">N/A (No Op)</span>';
+  remBox.classList.add("hidden");
+  if(sbtn){
+    sbtn.disabled=false;
+    sbtn.textContent="💾 Save";
+    sbtn.className="saverowbtn";
+  }
+  return;
+ }
+
  row.className="rl-row filled "+(s.ok?"":"dev");
  timeBox.className="rl-time on";
  timeBox.querySelector("b").textContent=s.stamp.time;
@@ -740,19 +987,28 @@ function paintRow(i){
  } else {
   remBox.classList.add("hidden");
  }
+ if(sbtn){
+   sbtn.disabled=false;
+   sbtn.textContent="💾 Save";
+   sbtn.className="saverowbtn";
+ }
 }
+
 function updateSummary(){
  const box=$("assessment");
  const filled=rl.state.filter(Boolean), n=filled.length;
  if(!n){
   box.className="notice";
-  box.textContent="Type a reading beside any room. Its status and time will appear here and in the row.";
+  box.textContent="Type a reading or click N/A beside any room. You can click 💾 Save on any room row to submit it immediately!";
   return;
  }
- const dev=filled.filter(s=>!s.ok).length;
+ const naCount=filled.filter(s=>s.isNA).length;
+ const dev=filled.filter(s=>!s.ok&&!s.isNA).length;
+ const comp=filled.filter(s=>s.ok&&!s.isNA).length;
  box.className="notice "+(dev?"alert":"good");
- box.textContent=`${n} room(s) filled \u2022 ${n-dev} compliant \u2022 ${dev} deviation(s). Press Save Monitoring Records to submit.`+(dev?" Document the action taken for each deviation below.":"");
+ box.textContent=`${n} room(s) filled \u2022 ${comp} compliant \u2022 ${naCount} N/A (no op) \u2022 ${dev} deviation(s). You can save rooms one by one (💾 Save) or press Save All Filled Rooms.`+(dev?" Document the action taken for each deviation below.":"");
 }
+
 function resetAssessment(){
  areas.forEach((a,i)=>{
   rl.state[i]=null;
@@ -762,27 +1018,172 @@ function resetAssessment(){
  });
  updateSummary();
 }
+
 function refreshLocks(){
  const stamp=currentStamp();
  areas.forEach((a,i)=>{
   const rec=data.slice().reverse().find(r=>r.area===a[0]&&r.date===stamp.date&&String(r.time||"").slice(0,2)===stamp.time.slice(0,2));
-  rl.locked[i]=rec?{time:rec.time,date:rec.date}:null;
-  $("tin"+i).disabled=$("rlb"+i).disabled=Boolean(rec);
+  rl.locked[i]=rec?{time:rec.time,date:rec.date,rec}:null;
+  const isLocked=Boolean(rec);
+  
+  const tin=$("tin"+i), th=$("th"+i), cal=$("cal"+i), rlb=$("rlb"+i), nab=$("nab"+i), sbtn=$("savebtn"+i);
+  if(tin){
+    tin.disabled=isLocked;
+    if(isLocked && rec){
+      tin.value=rec.temp==="N/A"?"N/A":(typeof rec.temp==="number"?rec.temp+"°C":rec.temp);
+    }
+  }
+  if(th){
+    th.disabled=isLocked;
+    if(isLocked && rec) th.value=rec.thermo||"";
+  }
+  if(cal){
+    if(isLocked && rec){
+      cal.value=rec.calibration||"";
+      if(rec.calibration==="N/A") cal.type="text";
+    }
+    cal.disabled=isLocked||(cal.value==="N/A");
+  }
+  if(rlb) rlb.disabled=isLocked;
+  if(nab) nab.disabled=isLocked;
+  if(sbtn){
+    sbtn.disabled=isLocked;
+    sbtn.textContent=isLocked?"✔️ Saved":"💾 Save";
+    sbtn.className="saverowbtn "+(isLocked?"saved":"");
+  }
   paintRow(i);
  });
 }
 
+function applyQuickFill(){
+  const qTh=$("quickThermo").value.trim();
+  const qCal=$("quickCalib").value;
+  if(!qTh && !qCal){
+    alert("Please enter a gauge item code or select a calibration date in Quick-Fill first.");
+    return;
+  }
+  let count=0;
+  areas.forEach((a,i)=>{
+    if(!rl.locked[i]){
+      if(qTh){
+        $("th"+i).value=qTh;
+        onItemCodeInput(i);
+      }
+      if(qCal && qTh!=="N/A"){
+        $("cal"+i).value=qCal;
+        onCalChange(i);
+      }
+      count++;
+    }
+  });
+  toast(`Applied quick-fill to ${count} room(s)`);
+}
+
+// Single Room Save Action
+function saveSingleRoom(i){
+  if(rl.locked[i]){
+    alert("This room is already recorded for this hour and date.");
+    return;
+  }
+  const mon=$("monitor").value;
+  const sh=$("shift").value;
+  if(!mon){
+    alert("Please select PERSON WHO MONITORS at the top of the form.");
+    $("monitor").focus();
+    return;
+  }
+  if(!sh){
+    alert("Please select SHIFT at the top of the form.");
+    $("shift").focus();
+    return;
+  }
+
+  const s=rl.state[i];
+  if(!s){
+    alert(`Please enter a temperature reading or click N/A for ${areas[i][0]}.`);
+    $("tin"+i).focus();
+    return;
+  }
+
+  const th=$("th"+i).value.trim();
+  const cal=$("cal"+i).value.trim();
+  if(!th){
+    alert(`Please enter GAUGE / ITEM CODE for ${areas[i][0]} (or click N/A).`);
+    $("th"+i).focus();
+    return;
+  }
+  if(!cal){
+    alert(`Please enter CALIBRATION DATE for ${areas[i][0]} (or click N/A).`);
+    $("cal"+i).focus();
+    return;
+  }
+
+  if(!s.ok && !s.isNA){
+    const rem=$("rlri"+i).value.trim();
+    if(!rem){
+      alert(`Please enter remarks / action taken for ${areas[i][0]} (${s.temp}°C is out of standard).`);
+      $("rlri"+i).focus();
+      return;
+    }
+  }
+
+  const a=areas[i];
+  const rec={
+    id:Date.now()+i,
+    date:s.stamp.date,
+    time:s.stamp.time,
+    area:a[0],
+    temp:s.isNA?"N/A":s.temp,
+    standard:a[3],
+    assessment:s.isNA?"N/A (No Operation)":(s.ok?"Compliant":"Deviation"),
+    monitor:mon,
+    shift:sh,
+    thermo:th,
+    calibration:cal,
+    remarks:s.isNA?"N/A - Not in operation":(s.ok?"":$("rlri"+i).value.trim()),
+    verification:"Pending Verification",
+    verifier:"",
+    verifyDate:"",
+    decisionRemarks:""
+  };
+
+  if(th!=="N/A") saveThermoMem(i, th, cal);
+
+  data.push(rec);
+  save();
+  refreshLocks();
+  toast(`Saved ${a[0]}: ${rec.temp}${s.isNA?"":"°C"}`);
+  focusSheet(rec);
+}
+
+// Batch Save Action
 $("entryForm").addEventListener("submit",e=>{
  e.preventDefault();
  const filled=[];
  areas.forEach((a,i)=>{if(!rl.locked[i]&&rl.state[i])filled.push(i)});
  if(!filled.length){
-  alert("Please enter a temperature reading for at least one room.");
+  alert("Please enter a temperature reading or click N/A for at least one room.");
   return;
  }
+ const mon=$("monitor").value, sh=$("shift").value;
+ if(!mon){alert("Please select PERSON WHO MONITORS.");$("monitor").focus();return}
+ if(!sh){alert("Please select SHIFT.");$("shift").focus();return}
+
  for(const i of filled){
   const s=rl.state[i];
-  if(!s.ok){
+  const th=$("th"+i).value.trim();
+  const cal=$("cal"+i).value.trim();
+  if(!th){
+    alert(`Please enter GAUGE / ITEM CODE for ${areas[i][0]} (or click N/A).`);
+    $("th"+i).focus();
+    return;
+  }
+  if(!cal){
+    alert(`Please enter CALIBRATION DATE for ${areas[i][0]} (or click N/A).`);
+    $("cal"+i).focus();
+    return;
+  }
+  if(!s.ok && !s.isNA){
    const rem=$("rlri"+i).value.trim();
    if(!rem){
     alert(`Please enter remarks / action taken for ${areas[i][0]} (${s.temp}°C is out of standard).`);
@@ -791,23 +1192,27 @@ $("entryForm").addEventListener("submit",e=>{
    }
   }
  }
- const mon=$("monitor").value, sh=$("shift").value, th=$("thermo").value.trim(), cal=$("calibration").value;
+
  const created=[];
  filled.forEach(i=>{
   const s=rl.state[i], a=areas[i];
+  const th=$("th"+i).value.trim();
+  const cal=$("cal"+i).value.trim();
+  if(th!=="N/A") saveThermoMem(i, th, cal);
+
   const rec={
    id:Date.now()+i,
    date:s.stamp.date,
    time:s.stamp.time,
    area:a[0],
-   temp:s.temp,
+   temp:s.isNA?"N/A":s.temp,
    standard:a[3],
-   assessment:s.ok?"Compliant":"Deviation",
+   assessment:s.isNA?"N/A (No Operation)":(s.ok?"Compliant":"Deviation"),
    monitor:mon,
    shift:sh,
    thermo:th,
    calibration:cal,
-   remarks:s.ok?"":$("rlri"+i).value.trim(),
+   remarks:s.isNA?"N/A - Not in operation":(s.ok?"":$("rlri"+i).value.trim()),
    verification:"Pending Verification",
    verifier:"",
    verifyDate:"",
@@ -816,9 +1221,10 @@ $("entryForm").addEventListener("submit",e=>{
   data.push(rec);
   created.push(rec);
  });
+
  save();
  refreshLocks();
- alert(`Saved ${created.length} monitoring record(s) successfully! Records are synced to cloud storage.`);
+ toast(`Saved ${created.length} room(s) successfully!`);
  resetAssessment();
  focusSheet(created[0]);
 });
@@ -831,12 +1237,12 @@ function showTab(tab){
  else if(tab==="verify"){renderWeeks()}
 }
 function badge(st){
- const map={"Compliant":"ok","Verified":"ok","Deviation":"bad","Rejected":"bad","Pending Verification":"pending","Partially Verified":"pending"};
+ const map={"Compliant":"ok","Verified":"ok","Deviation":"bad","Rejected":"bad","Pending Verification":"pending","Partially Verified":"pending","N/A (No Operation)":"neutral"};
  return `<span class="status ${map[st]||"neutral"}">${esc(st)}</span>`;
 }
 function render(){
  $("totalCount").textContent=data.length;
- $("compliantCount").textContent=data.filter(r=>r.assessment==="Compliant").length;
+ $("compliantCount").textContent=data.filter(r=>r.assessment==="Compliant"||String(r.assessment).includes("N/A")).length;
  $("deviationCount").textContent=data.filter(r=>r.assessment==="Deviation").length;
  $("pendingCount").textContent=data.filter(r=>r.verification==="Pending Verification").length;
 
@@ -844,8 +1250,11 @@ function render(){
  let rows=data.filter(r=>{
   if(fDate&&r.date!==fDate)return false;
   if(fArea&&r.area!==fArea)return false;
-  if(fStat&&r.assessment!==fStat&&r.verification!==fStat)return false;
-  if(q&&!(r.monitor.toLowerCase().includes(q)||r.thermo.toLowerCase().includes(q)||r.area.toLowerCase().includes(q)))return false;
+  if(fStat){
+    if(fStat.includes("N/A")&&!String(r.assessment).includes("N/A"))return false;
+    else if(!fStat.includes("N/A")&&r.assessment!==fStat&&r.verification!==fStat)return false;
+  }
+  if(q&&!(r.monitor.toLowerCase().includes(q)||String(r.thermo||"").toLowerCase().includes(q)||r.area.toLowerCase().includes(q)))return false;
   return true;
  }).sort((a,b)=>b.id-a.id);
 
@@ -854,9 +1263,10 @@ function render(){
   let ccDisplay="";
   if(cc){
    let sigUrl=ocSig(cc);
-   ccDisplay=`<div class="counter-sign-display"><b>${esc(cc.checker)}</b><small>(${esc(cc.time.slice(0,5))} \u2022 ${cc.temp}\u00B0C \u2022 ${esc(cc.result)})</small>${sigUrl?`<img src="${sigUrl}" alt="signature">`:"<small>Not signed</small>"}</div>`;
+   ccDisplay=`<div class="counter-sign-display"><b>${esc(cc.checker)}</b><small>(${esc(cc.time.slice(0,5))} \u2022 ${cc.temp==="N/A"?"N/A":cc.temp+"\u00B0C"} \u2022 ${esc(cc.result)})</small>${sigUrl?`<img src="${sigUrl}" alt="signature">`:"<small>Not signed</small>"}</div>`;
   }
-  return `<tr><td><b>${esc(r.date)}</b><br><small>${esc(r.time)}</small></td><td><b>${esc(r.area)}</b></td><td><b>${r.temp.toFixed(1)}°C</b></td><td>${esc(r.standard)}</td><td><div class="monitor-counter-wrap"><div class="monitor-info"><b>${esc(r.monitor)}</b><small>${esc(r.shift)}</small></div>${ccDisplay}</div></td><td>${esc(r.thermo)}<br><small>Cal: ${esc(r.calibration)}</small></td><td>${badge(r.assessment)}</td><td>${badge(r.verification)}</td><td><button class="secondary" onclick="viewRecord(${r.id})">View</button></td></tr>`;
+  const tempDisplay=r.temp==="N/A"?"<b style='color:#64748b'>N/A</b>":`<b>${typeof r.temp==="number"?r.temp.toFixed(1):r.temp}°C</b>`;
+  return `<tr><td><b>${esc(r.date)}</b><br><small>${esc(r.time)}</small></td><td><b>${esc(r.area)}</b></td><td>${tempDisplay}</td><td>${esc(r.standard)}</td><td><div class="monitor-counter-wrap"><div class="monitor-info"><b>${esc(r.monitor)}</b><small>${esc(r.shift)}</small></div>${ccDisplay}</div></td><td>${esc(r.thermo)}<br><small>Cal: ${esc(r.calibration)}</small></td><td>${badge(r.assessment)}</td><td>${badge(r.verification)}</td><td><button class="secondary" onclick="viewRecord(${r.id})">View</button></td></tr>`;
  }).join("")||'<tr><td colspan="9">No records found.</td></tr>';
  renderCounter();
  renderSheet();
@@ -865,7 +1275,8 @@ function render(){
 
 function viewRecord(id){
  let r=data.find(x=>x.id===id),cc=cdata.filter(x=>String(x.linkedId)===String(r.id)).sort((a,b)=>b.id-a.id)[0];
- alert(`Record #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nTemperature: ${r.temp}°C (${r.assessment})\nMonitor / PLI: ${r.monitor} / ${r.shift}\nOIC/PLI Counter Checked By: ${cc?cc.checker:"Pending"}\nCounter Check Signature: ${cc&&ocSig(cc)?"Signed":"Not yet signed"}\nThermometer: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}\nVerification: ${r.verification}\nVerified by: ${r.verifier||"—"}\nVerified at: ${r.verifyDate||"—"}\nVerification remarks: ${r.decisionRemarks||"—"}`);
+ const tVal=r.temp==="N/A"?"N/A (No Operation)":r.temp+"°C";
+ alert(`Record #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nTemperature: ${tVal} (${r.assessment})\nMonitor / PLI: ${r.monitor} / ${r.shift}\nOIC/PLI Counter Checked By: ${cc?cc.checker:"Pending"}\nCounter Check Signature: ${cc&&ocSig(cc)?"Signed":"Not yet signed"}\nThermometer / Gauge: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}\nVerification: ${r.verification}\nVerified by: ${r.verifier||"—"}\nVerified at: ${r.verifyDate||"—"}\nVerification remarks: ${r.decisionRemarks||"—"}`);
 }
 
 function exportCSV(){
@@ -930,6 +1341,7 @@ function buildCounterRooms(){
 function toggleCSign(i){
  const inp=$("ctin"+i);
  let v=cleanTemp(inp.value);
+ if(v==="N/A") return;
  if(v.charAt(0)==="-") v=v.slice(1);
  else v="-"+v;
  setTemp(inp,v);
@@ -952,7 +1364,11 @@ function renderCounter(){
   const lm=latestMon(a[0]), mb=$("crm"+i);
   if(!mb)return;
   if(lm){
-   mb.innerHTML=`<b>${lm.temp.toFixed(1)}°C</b><small>${esc(lm.time.slice(0,5))} \u2022 ${esc(lm.monitor.split(",")[0])}</small>`;
+   if(lm.temp==="N/A"){
+     mb.innerHTML=`<b style="color:#64748b">N/A (No Op)</b><small>${esc(lm.time.slice(0,5))} \u2022 ${esc(lm.monitor.split(",")[0])}</small>`;
+   } else {
+     mb.innerHTML=`<b>${Number(lm.temp).toFixed(1)}°C</b><small>${esc(lm.time.slice(0,5))} \u2022 ${esc(lm.monitor.split(",")[0])}</small>`;
+   }
   } else {
    mb.innerHTML='<span style="color:#8a99a8">No monitoring reading</span>';
   }
@@ -969,7 +1385,7 @@ function onCTemp(i){
  }
  const num=Number(raw), area=areas[i][0], ok=isCompliant(area,num);
  const lm=latestMon(area);
- const diff=lm?Math.abs(num-lm.temp):null;
+ const diff=(lm&&lm.temp!=="N/A")?Math.abs(num-Number(lm.temp)):null;
  const discrepancy=diff!==null&&diff>COUNTER_TOL;
  const prev=crl.state[i];
  const stamp=prev?prev.stamp:currentStamp();
@@ -1102,7 +1518,16 @@ function renderSheet(){
  let d=$("sheetDate").value,sh=$("sheetShift").value;if(!d){$("sheetTable").innerHTML="";return}
  let recs=data.filter(r=>r.shift===sh&&sd(r)===d),cols=[...new Set([...shiftSlots(sh,d),...recs.map(r=>r.date+"|"+r.time.slice(0,2))])].sort();
  let head=`<thead><tr><th colspan="${cols.length+2}" class="sheettitle"><div style="position:sticky;left:8px;width:max-content">MONITORING — ${esc(sh.toUpperCase())} (${esc(shiftLabel(sh))}) — ${esc(fmtD(d))}</div></th></tr><tr><th rowspan="2" class="c1">ROOM</th><th rowspan="2" class="c2">STD</th><th colspan="${cols.length}">TIME</th></tr><tr>${cols.map(k=>{if(!k)return"<th>&nbsp;</th>";let[dt,h]=k.split("|");return `<th>${h}:00<br><small>${esc(fmtS(dt))}</small></th>`}).join("")}</tr></thead>`;
- let body=areas.map((a,i)=>`<tr><td class="room c1">${i+1}. ${esc(a[0])}</td><td class="c2">${esc(a[3])}</td>${cols.map(k=>{if(!k)return'<td class="cell"></td>';let[dt,h]=k.split("|"),rs=recs.filter(r=>r.area===a[0]&&r.date===dt&&r.time.slice(0,2)===h).sort((x,y)=>x.id-y.id);return `<td class="cell">${rs.map(r=>`<div class="rd${r.assessment==="Deviation"?" dev":""}" onclick="viewRecord(${r.id})" title="${esc(r.monitor)} • ${esc(r.time)}"><span class="t">${r.temp.toFixed(1)}</span><br><span class="tm">${esc(r.time.slice(0,5))}</span></div>`).join("")}</td>`}).join("")}</tr>`).join("");
+ let body=areas.map((a,i)=>`<tr><td class="room c1">${i+1}. ${esc(a[0])}</td><td class="c2">${esc(a[3])}</td>${cols.map(k=>{
+   if(!k)return'<td class="cell"></td>';
+   let[dt,h]=k.split("|"),rs=recs.filter(r=>r.area===a[0]&&r.date===dt&&r.time.slice(0,2)===h).sort((x,y)=>x.id-y.id);
+   return `<td class="cell">${rs.map(r=>{
+     const isNA=r.temp==="N/A"||String(r.assessment).includes("N/A");
+     const cls=isNA?" na":(r.assessment==="Deviation"?" dev":"");
+     const txt=isNA?"N/A":(typeof r.temp==="number"?r.temp.toFixed(1):r.temp);
+     return `<div class="rd${cls}" onclick="viewRecord(${r.id})" title="${esc(r.monitor)} • ${esc(r.time)} • Gauge: ${esc(r.thermo)} • ${esc(r.assessment)}"><span class="t">${esc(txt)}</span><br><span class="tm">${esc(r.time.slice(0,5))}</span></div>`;
+   }).join("")}</td>`;
+ }).join("")}</tr>`).join("");
  $("sheetTable").innerHTML=head+`<tbody>${body}</tbody>`;
  let key=d+"|"+sh,sigs=sheetSigs[key]||[];
  $("sheetSigs").innerHTML=sigs.map((g,i)=>`<div>${g.sig?`<img src="${g.sig}" alt="signature">`:'<div class="blank"></div>'}<p><b>Monitored By:</b> ${esc(g.name)}</p><button class="secondary rm noprint" onclick="removeSheetSig('${key}',${i})">Remove</button></div>`).join("")+(()=>{let ids=new Set(recs.map(r=>String(r.id))),seen={},out=[];cdata.slice().sort((a,b)=>b.id-a.id).forEach(c=>{if(!ocSig(c))return;if(!((c.shift===sh&&sd(c)===d)||ids.has(String(c.linkedId))))return;let k=String(c.checker).trim().toLowerCase();if(seen[k])return;seen[k]=1;out.push(c)});return out.map(c=>`<div class="ocsig"><img src="${ocSig(c)}" alt="OIC/PLI signature"><p><b>OIC/PLI:</b> ${esc(c.checker)}</p></div>`).join("")})();
@@ -1150,7 +1575,16 @@ function renderCounterSheet(){
  let cols=hrs.slice();while(cols.length<5)cols.push(null);
  let label=new Date(d+"T00:00:00").toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
  let head=`<thead><tr><th colspan="${cols.length+2}" class="sheettitle"><div style="position:sticky;left:8px;width:max-content">COUNTERCHECKING — ${esc(label)}</div></th></tr><tr><th rowspan="2" class="c1">ROOM</th><th rowspan="2" class="c2">STD</th><th colspan="${cols.length}">TIME</th></tr><tr>${cols.map(h=>`<th>${h===null?"&nbsp;":pad(h)+":00"}</th>`).join("")}</tr></thead>`;
- let body=areas.map((a,i)=>`<tr><td class="room c1" style="cursor:pointer" onclick="counterPick(areas[${i}][0])" title="Counter check this area">${i+1}. ${esc(a[0])}</td><td class="c2">${esc(a[3])}</td>${cols.map(h=>{if(h===null)return '<td class="cell"></td>';let rs=recs.filter(r=>r.area===a[0]&&Number(r.time.slice(0,2))===h).sort((x,y)=>x.id-y.id);return `<td class="cell">${rs.map(r=>`<div class="rd${r.assessment==="Deviation"||r.result==="Discrepancy"?" dev":""}" onclick="viewCounter(${r.id})" title="${esc(r.checker)} • ${esc(r.time)}"><span class="t">${r.temp.toFixed(1)}</span><br><span class="tm">${esc(r.time.slice(0,5))}</span></div>`).join("")}</td>`}).join("")}</tr>`).join("");
+ let body=areas.map((a,i)=>`<tr><td class="room c1" style="cursor:pointer" onclick="counterPick(areas[${i}][0])" title="Counter check this area">${i+1}. ${esc(a[0])}</td><td class="c2">${esc(a[3])}</td>${cols.map(h=>{
+   if(h===null)return '<td class="cell"></td>';
+   let rs=recs.filter(r=>r.area===a[0]&&Number(r.time.slice(0,2))===h).sort((x,y)=>x.id-y.id);
+   return `<td class="cell">${rs.map(r=>{
+     const isNA=r.temp==="N/A"||String(r.assessment).includes("N/A");
+     const cls=isNA?" na":(r.assessment==="Deviation"||r.result==="Discrepancy"?" dev":"");
+     const txt=isNA?"N/A":(typeof r.temp==="number"?r.temp.toFixed(1):r.temp);
+     return `<div class="rd${cls}" onclick="viewCounter(${r.id})" title="${esc(r.checker)} • ${esc(r.time)}"><span class="t">${esc(txt)}</span><br><span class="tm">${esc(r.time.slice(0,5))}</span></div>`;
+   }).join("")}</td>`;
+ }).join("")}</tr>`).join("");
  $("counterSheet").innerHTML=head+`<tbody>${body}</tbody>`;
 }
 $("cSheetDate").value=currentStamp().date;
@@ -1169,7 +1603,8 @@ function counterPick(area){
 
 function viewCounter(id){
  let r=cdata.find(x=>x.id===id);
- alert(`Counter Check #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nCounter check: ${r.temp}°C (${r.assessment})\nMonitoring reading: ${r.linkedTemp!==""?r.linkedTemp+"°C by "+r.linkedMonitor+" ("+r.linkedStamp+")":"—"}\nDifference: ${r.diff!==null&&r.diff!==undefined?r.diff.toFixed(1)+"°C":"—"} (${r.result})\nCounter checker: ${r.checker} / ${r.shift}\nThermometer: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}`);
+ const tVal=r.temp==="N/A"?"N/A":r.temp+"°C";
+ alert(`Counter Check #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nCounter check: ${tVal} (${r.assessment})\nMonitoring reading: ${r.linkedTemp!==""?r.linkedTemp+"°C by "+r.linkedMonitor+" ("+r.linkedStamp+")":"—"}\nDifference: ${r.diff!==null&&r.diff!==undefined?r.diff.toFixed(1)+"°C":"—"} (${r.result})\nCounter checker: ${r.checker} / ${r.shift}\nThermometer / Gauge: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}`);
 }
 
 // Weekly Verification Module
@@ -1230,7 +1665,7 @@ function openWeek(k){
  $("weekSheets").innerHTML=keys.map(key=>{let[d,sh]=key.split("|"),rs=combos[key],dv=rs.filter(r=>r.assessment==="Deviation").length,sg=(sheetSigs[d+"|"+sh]||[]).map(g=>g.name);
  return `<tr><td>${esc(fmtD(d))}</td><td>${esc(sh)}</td><td>${rs.length}</td><td>${dv?`<b style="color:#a42b21">${dv}</b>`:0}</td><td>${sg.length?esc(sg.join(", ")):"<small>Not signed</small>"}</td><td><button class="secondary" onclick="gotoSheet('${d}','${esc(sh)}')">View Sheet</button></td></tr>`}).join("");
  let fl=w.rs.filter(r=>r.assessment==="Deviation"||r.remarks).sort((a,b)=>a.id-b.id);
- $("weekFlags").innerHTML=fl.map(r=>`<tr><td>${esc(r.date)}<br>${esc(r.time)}</td><td>${esc(r.area)}</td><td><b>${r.temp.toFixed(1)}°C</b><br>${badge(r.assessment)}</td><td>${esc(r.standard)}</td><td>${esc(r.monitor)}<br>${esc(r.shift)}</td><td>${esc(r.remarks||"—")}</td></tr>`).join("")||'<tr><td colspan="6">No deviations or remarks this week.</td></tr>';
+ $("weekFlags").innerHTML=fl.map(r=>`<tr><td>${esc(r.date)}<br>${esc(r.time)}</td><td>${esc(r.area)}</td><td><b>${typeof r.temp==='number'?r.temp.toFixed(1)+'°C':r.temp}</b><br>${badge(r.assessment)}</td><td>${esc(r.standard)}</td><td>${esc(r.monitor)}<br>${esc(r.shift)}</td><td>${esc(r.remarks||"—")}</td></tr>`).join("")||'<tr><td colspan="6">No deviations or remarks this week.</td></tr>';
  let done=(weeklyVer[k]||[]);$("weekDone").innerHTML=done.map(v=>`<div class="notice ${v.decision==="Verified"?"good":"alert"}" style="margin-top:12px"><b>${esc(v.decision)}</b> by <b>${esc(v.verifier)}</b> • ${esc(v.date.replace("T"," "))} • ${v.count} record(s)<br>${esc(v.remarks)}${checksHtml(v.checks)}${devHtml(v.dev)}${v.sig?`<img src="${v.sig}" alt="signature" style="display:block;width:220px;height:80px;object-fit:contain;border-bottom:1px solid #333;margin-top:8px">`:""}</div>`).join("");
  $("weekDone").classList.toggle("hidden",!done.length);
  $("weekForm").classList.toggle("hidden",!w.pend);$("weekCloseBtn").classList.toggle("hidden",!!w.pend);
