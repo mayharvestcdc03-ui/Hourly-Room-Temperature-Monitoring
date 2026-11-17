@@ -886,11 +886,10 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
      </div>
 
      <h4 style="margin:12px 0 6px;color:var(--navy);font-size:12.5px">Review Questions</h4>
-     <div class="grid" style="grid-template-columns:repeat(2,1fr);gap:8px">
-      <div class="field"><label for="vq1" style="font-size:11px">1. PLI in charge of blast freezing *</label><select id="vq1"></select><input id="vq1Other" class="hidden" placeholder="Specify name"></div>
-      <div class="field"><label for="vq2" style="font-size:11px">2. PLI performs ice point verification? *</label><select id="vq2"><option value="Yes">Yes</option><option value="No">No</option></select></div>
-      <div class="field"><label for="vq3" style="font-size:11px">3. Aware of calibration due date? *</label><select id="vq3"><option value="Yes">Yes</option><option value="No">No</option></select></div>
-      <div class="field"><label for="vq4" style="font-size:11px">4. Thermometer cleaned and sanitized? *</label><select id="vq4"><option value="Yes">Yes</option><option value="No">No</option></select></div>
+     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">
+      <div class="field"><label for="vq2" style="font-size:11px">1. PLI performs ice point verification? *</label><select id="vq2"><option value="Yes">Yes</option><option value="No">No</option></select></div>
+      <div class="field"><label for="vq3" style="font-size:11px">2. Aware of calibration due date? *</label><select id="vq3"><option value="Yes">Yes</option><option value="No">No</option></select></div>
+      <div class="field"><label for="vq4" style="font-size:11px">3. Thermometer cleaned and sanitized? *</label><select id="vq4"><option value="Yes">Yes</option><option value="No">No</option></select></div>
      </div>
 
      <div id="devBlock" class="hidden" style="margin-top:10px">
@@ -2159,9 +2158,10 @@ function printSheet(c){c=c||"ps";document.body.classList.add(c);window.print();d
 function renderCounterSheet(){
  let d=$("cSheetDate").value;if(!d){$("counterSheet").innerHTML="";return}
  let recs=cdata.filter(r=>r.date===d),hrs=[...new Set(recs.map(r=>Number(r.time.slice(0,2))))].sort((a,b)=>a-b);
- let cols=hrs.length ? hrs.slice() : [null];
+ let cols=hrs.slice();
+ while(cols.length < 5) cols.push(null);
  let label=new Date(d+"T00:00:00").toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
- let head=`<thead><tr><th colspan="${cols.length+2}" class="sheettitle"><div style="position:sticky;left:8px;width:max-content">COUNTERCHECKING — ${esc(label)}</div></th></tr><tr><th rowspan="2" class="c1">ROOM</th><th rowspan="2" class="c2">STD</th><th colspan="${cols.length}">TIME</th></tr><tr>${cols.map(h=>`<th>${h===null?"&nbsp;":pad(h)+":00"}</th>`).join("")}</tr></thead>`;
+ let head=`<thead><tr><th colspan="${cols.length+2}" class="sheettitle"><div style="position:sticky;left:8px;width:max-content">COUNTER CHECKING CHECKLIST (EVERY 4 HOURS) — ${esc(label)}</div></th></tr><tr><th rowspan="2" class="c1">ROOM / AREA</th><th rowspan="2" class="c2">STD</th><th colspan="${cols.length}">CHECKING TIME (EVERY 4 HOURS)</th></tr><tr>${cols.map((h, idx)=>`<th>${h===null?`Check ${idx+1}`:`${pad(h)}:00<br><small>Check ${idx+1}</small>`}</th>`).join("")}</tr></thead>`;
  let body=areas.map((a,i)=>`<tr><td class="room c1" style="cursor:pointer" onclick="counterPick(areas[${i}][0])" title="Counter check this area">${i+1}. ${esc(a[0])}</td><td class="c2">${esc(a[3])}</td>${cols.map(h=>{
    if(h===null)return '<td class="cell"></td>';
    let rs=recs.filter(r=>r.area===a[0]&&Number(r.time.slice(0,2))===h).sort((x,y)=>x.id-y.id);
@@ -2238,18 +2238,18 @@ const verifierList = [
   "Cleo Ann Francisco"
 ], OTHER = "Other (specify)";
 function fillPick(sel,list){sel.innerHTML='<option value="">Select name</option>'+list.map(n=>`<option>${esc(n)}</option>`).join("")+`<option>${OTHER}</option>`}
-fillPick($("verifier"),verifierList);fillPick($("vq1"),verifierList);
-[["verifier","verifierOther"],["vq1","vq1Other"]].forEach(([a,b])=>$(a).addEventListener("change",()=>{const o=$(a).value===OTHER;$(b).classList.toggle("hidden",!o);if(o)$(b).focus();else $(b).value=""}));
+fillPick($("verifier"),verifierList);
+[["verifier","verifierOther"]].forEach(([a,b])=>$(a).addEventListener("change",()=>{const o=$(a).value===OTHER;$(b).classList.toggle("hidden",!o);if(o)$(b).focus();else $(b).value=""}));
 const pickVal=(a,b)=>$(a).value===OTHER?$(b).value.trim():$(a).value;
-const vName=()=>pickVal("verifier","verifierOther"),vPli=()=>pickVal("vq1","vq1Other");
+const vName=()=>pickVal("verifier","verifierOther");
 function resetVerifyForm(){
  ["vAction","vResult","vDisp"].forEach(id=>$(id).value="");
- ["verifier","vq1","vq2","vq3","vq4"].forEach(id=>$(id).value="");
- ["verifierOther","vq1Other"].forEach(id=>{$(id).value="";$(id).classList.add("hidden")});
+ ["verifier","vq2","vq3","vq4"].forEach(id=>$(id).value="");
+ ["verifierOther"].forEach(id=>{$(id).value="";$(id).classList.add("hidden")});
 }
 function checksHtml(c){
  if(!c)return"";
- return `<div style="margin-top:8px;font-size:12px;color:#203040"><b>1.</b> PLI in charge of blast freezing monitoring: <b>${esc(c.q1)}</b><br><b>2.</b> PLI performs ice point verification prior to use: <b>${esc(c.q2)}</b><br><b>3.</b> PLI aware of calibration due date of measuring equipment: <b>${esc(c.q3)}</b><br><b>4.</b> Thermometer cleaned and sanitized prior to use: <b>${esc(c.q4)}</b></div>`;
+ return `<div style="margin-top:8px;font-size:12px;color:#203040">${c.q1?`<b>•</b> PLI in charge of blast freezing: <b>${esc(c.q1)}</b><br>`:""}<b>1.</b> PLI performs ice point verification prior to use: <b>${esc(c.q2||'—')}</b><br><b>2.</b> PLI aware of calibration due date of measuring equipment: <b>${esc(c.q3||'—')}</b><br><b>3.</b> Thermometer cleaned and sanitized prior to use: <b>${esc(c.q4||'—')}</b></div>`;
 }
 function devHtml(d){
  if(!d)return"";
@@ -2401,13 +2401,13 @@ function closeWeek(){$("weekEditor").classList.add("hidden");selectedWeek=null}
 function submitWeek(){
  if(!selectedWeek)return;let k=selectedWeek,w=weekStatus(k);
  if(!vName()||!$("verifyDate").value||!$("verifyRemarks").value.trim()){alert("Please complete the reviewer name (select from the list, or specify if Other), review date/time, and review remarks.");return}
- if(!vPli()||!$("vq2").value||!$("vq3").value||!$("vq4").value){alert("Please answer all four verification questions (including the name of the PLI in charge of blast freezing monitoring).");return}
+ if(!$("vq2").value||!$("vq3").value||!$("vq4").value){alert("Please answer all three review questions.");return}
  let hasDev=w.rs.some(r=>r.assessment==="Deviation");
  if(hasDev&&(!$("vAction").value.trim()||!$("vResult").value.trim()||!$("vDisp").value.trim())){alert("This week has deviation(s). Please complete Action Taken, Result of Action Taken, and Product Disposition (type N/A if none).");return}
  if($("vPad").dataset.has!=="1"){alert("Please sign in the signature box.");return}
  let pend=w.rs.filter(r=>!r.verification || r.verification==="Pending Verification" || r.verification==="Pending Review" || r.verification==="Reviewed" || r.verification==="Verified"),dec=$("decision").value,name=vName(),dt=$("verifyDate").value,rm=$("verifyRemarks").value.trim();
  pend.forEach(r=>{r.verification=dec;r.verifier=name;r.verifyDate=dt;r.decisionRemarks=rm});
- (weeklyVer[k]=weeklyVer[k]||[]).push({verifier:name,date:dt,decision:dec,remarks:rm,sig:$("vPad").toDataURL(),count:pend.length,checks:{q1:vPli(),q2:$("vq2").value,q3:$("vq3").value,q4:$("vq4").value},dev:hasDev?{action:$("vAction").value.trim(),result:$("vResult").value.trim(),disp:$("vDisp").value.trim()}:null});
+ (weeklyVer[k]=weeklyVer[k]||[]).push({verifier:name,date:dt,decision:dec,remarks:rm,sig:$("vPad").toDataURL(),count:pend.length,checks:{q2:$("vq2").value,q3:$("vq3").value,q4:$("vq4").value},dev:hasDev?{action:$("vAction").value.trim(),result:$("vResult").value.trim(),disp:$("vDisp").value.trim()}:null});
  localStorage.setItem("hourlyTempWeeklyVerifications",JSON.stringify(weeklyVer));
  save();
  closeWeek();
