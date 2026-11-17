@@ -223,7 +223,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
 .counter-sign-display img{display:block;width:88px;height:30px;object-fit:contain;background:#fff;border:1px solid #d8dee6;border-radius:4px;margin-top:3px}
 .counter-sign-display small{display:block;color:var(--muted);font-size:10px}
 
-/* ===== Room list entry (Updated with per-room Item Code, Calib, N/A, and Save) ===== */
+/* ===== Room list entry (Updated with per-room ITME Code, Calib, N/A, and Save) ===== */
 .clockbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 14px;color:var(--muted);font-size:12px}
 .clockbar b{font-variant-numeric:tabular-nums;color:var(--navy);font-size:14px}
 .rooms{border:1px solid var(--line);border-radius:10px;overflow-x:auto;margin-top:8px;background:#fff}
@@ -363,13 +363,13 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
  <section id="entry" class="panel">
   <h2>1. Hourly Monitoring Data Entry</h2>
   <div class="notice">
-    <b>Instructions:</b> Select Monitor &amp; Shift below. Each room has its own <b>Gauge/Item Code</b> and <b>Calibration Date</b> (remembered automatically per room). Click <b>N/A</b> if the room is not in operation or if no gauge is used. You can save each room individually using the <b>💾 Save</b> button on that row, or use the button at the bottom to save all filled rooms. Records are synced across all devices live.
+    <b>Instructions:</b> Select Monitor &amp; Shift below. Each room has its own <b>ITME Code</b> and <b>Calibration Date</b> (remembered automatically per room). Click <b>N/A</b> if the room is not in operation or if no ITME code is used. You can save each room individually using the <b>💾 Save</b> button on that row, or use the button at the bottom to save all filled rooms. Records are synced across all devices live.
   </div>
   <form id="entryForm">
    <div class="grid">
     <div class="field"><label for="monitor">PERSON WHO MONITORS *</label><select id="monitor" required><option value="">Select personnel</option></select></div>
     <div class="field"><label for="shift">SHIFT *</label><select id="shift" required><option value="">Select shift</option><option value="Day Shift">Day Shift (5:00 AM &ndash; 2:00 PM)</option><option value="Mid Shift">Mid Shift (1:00 PM &ndash; 10:00 PM)</option><option value="Night Shift">Night Shift (9:00 PM &ndash; 6:00 AM)</option></select></div>
-    <div class="field"><label for="quickThermo">QUICK-FILL ITEM CODE (OPTIONAL)</label><input id="quickThermo" placeholder="Type here to bulk-fill below"></div>
+    <div class="field"><label for="quickThermo">QUICK-FILL ITME CODE (OPTIONAL)</label><input id="quickThermo" placeholder="Type here to bulk-fill below"></div>
     <div class="field">
       <label for="quickCalib">QUICK-FILL CALIB DATE</label>
       <div style="display:flex;gap:6px">
@@ -385,7 +385,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
       <div>#</div>
       <div>ROOM / AREA</div>
       <div>STANDARD</div>
-      <div>GAUGE / ITEM CODE</div>
+      <div>ITME CODE</div>
       <div>CALIB DATE</div>
       <div>ACTUAL TEMPERATURE</div>
       <div>TIME</div>
@@ -426,9 +426,9 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
    <div class="field"><label>FILTER BY DATE</label><input type="date" id="filterDate"></div>
    <div class="field"><label>FILTER BY AREA</label><select id="filterArea"><option value="">All areas</option></select></div>
    <div class="field"><label>FILTER BY STATUS</label><select id="filterStatus"><option value="">All statuses</option><option>Compliant</option><option>Deviation</option><option>N/A (No Operation)</option><option>Pending Verification</option><option>Verified</option><option>Rejected</option></select></div>
-   <div class="field"><label>SEARCH PERSON / ITEM CODE</label><input id="searchText" placeholder="Search..."></div>
+   <div class="field"><label>SEARCH PERSON / ITME CODE</label><input id="searchText" placeholder="Search..."></div>
   </div>
-  <div class="tablewrap"><table><thead><tr><th>Date / Time</th><th>Area</th><th>Actual °C</th><th>Standard</th><th>PLI Monitor / OIC-PLI Counter Check</th><th>Thermometer / Calibration</th><th>Assessment</th><th>Verification</th><th>Action</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
+  <div class="tablewrap"><table><thead><tr><th>Date / Time</th><th>Area</th><th>Actual °C</th><th>Standard</th><th>PLI Monitor / OIC-PLI Counter Check</th><th>ITME Code / Calibration</th><th>Assessment</th><th>Verification</th><th>Action</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
  </section>
 
  <section id="counter" class="panel hidden">
@@ -439,7 +439,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
    <div class="grid">
     <div class="field"><label for="cChecker">COUNTER CHECKED BY *</label><input id="cChecker" list="cPeople" placeholder="Enter complete name" required><datalist id="cPeople"></datalist></div>
     <div class="field"><label for="cShift">SHIFT *</label><select id="cShift" required><option value="">Select shift</option><option value="Day Shift">Day Shift (5:00 AM – 2:00 PM)</option><option value="Mid Shift">Mid Shift (1:00 PM – 10:00 PM)</option><option value="Night Shift">Night Shift (9:00 PM – 6:00 AM)</option></select></div>
-    <div class="field"><label for="cThermo">THERMOMETER ITEM CODE *</label><input id="cThermo" placeholder="Enter item code" required></div>
+    <div class="field"><label for="cThermo">THERMOMETER ITME CODE *</label><input id="cThermo" placeholder="Enter ITME code" required></div>
     <div class="field"><label for="cCalib">CALIBRATION DATE *</label><input type="date" id="cCalib" required></div>
    </div>
    <h3 style="margin-top:22px">Rooms / Areas to Counter Check</h3>
@@ -756,7 +756,7 @@ function saveC(){
   triggerServerSync();
 }
 
-/* ===== Room list entry (with per-room Item Code, Calib, N/A, and Save) ===== */
+/* ===== Room list entry (with per-room ITME Code, Calib, N/A, and Save) ===== */
 const rl={state:[],locked:[]};
 function cleanTemp(s){
   if(String(s).toUpperCase()==="N/A") return "N/A";
@@ -794,8 +794,8 @@ function buildRoomList(){
      
      <div class="rl-itemcode">
        <div class="field-with-btn">
-         <input class="th-in" id="th${i}" data-i="${i}" placeholder="Item code" value="${esc(memTh)}" oninput="onItemCodeInput(${i})">
-         <button type="button" class="nabtn" title="Set gauge code to N/A" onclick="setItemNA(${i})">N/A</button>
+         <input class="th-in" id="th${i}" data-i="${i}" placeholder="ITME code" value="${esc(memTh)}" oninput="onItemCodeInput(${i})">
+         <button type="button" class="nabtn" title="Set ITME code to N/A" onclick="setItemNA(${i})">N/A</button>
        </div>
      </div>
 
@@ -874,7 +874,7 @@ function setTempNA(i){
   const inp=$("tin"+i);
   inp.value="N/A";
   
-  // Set item code and calibration date to N/A if empty or already N/A
+  // Set ITME code and calibration date to N/A if empty or already N/A
   const thInp=$("th"+i);
   if(!thInp.value || thInp.value==="N/A"){
     setItemNA(i);
@@ -1059,7 +1059,7 @@ function applyQuickFill(){
   const qTh=$("quickThermo").value.trim();
   const qCal=$("quickCalib").value;
   if(!qTh && !qCal){
-    alert("Please enter a gauge item code or select a calibration date in Quick-Fill first.");
+    alert("Please enter an ITME code or select a calibration date in Quick-Fill first.");
     return;
   }
   let count=0;
@@ -1108,7 +1108,7 @@ function saveSingleRoom(i){
   const th=$("th"+i).value.trim();
   const cal=$("cal"+i).value.trim();
   if(!th){
-    alert(`Please enter GAUGE / ITEM CODE for ${areas[i][0]} (or click N/A).`);
+    alert(`Please enter ITME CODE for ${areas[i][0]} (or click N/A).`);
     $("th"+i).focus();
     return;
   }
@@ -1174,7 +1174,7 @@ $("entryForm").addEventListener("submit",e=>{
   const th=$("th"+i).value.trim();
   const cal=$("cal"+i).value.trim();
   if(!th){
-    alert(`Please enter GAUGE / ITEM CODE for ${areas[i][0]} (or click N/A).`);
+    alert(`Please enter ITME CODE for ${areas[i][0]} (or click N/A).`);
     $("th"+i).focus();
     return;
   }
@@ -1276,7 +1276,7 @@ function render(){
 function viewRecord(id){
  let r=data.find(x=>x.id===id),cc=cdata.filter(x=>String(x.linkedId)===String(r.id)).sort((a,b)=>b.id-a.id)[0];
  const tVal=r.temp==="N/A"?"N/A (No Operation)":r.temp+"°C";
- alert(`Record #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nTemperature: ${tVal} (${r.assessment})\nMonitor / PLI: ${r.monitor} / ${r.shift}\nOIC/PLI Counter Checked By: ${cc?cc.checker:"Pending"}\nCounter Check Signature: ${cc&&ocSig(cc)?"Signed":"Not yet signed"}\nThermometer / Gauge: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}\nVerification: ${r.verification}\nVerified by: ${r.verifier||"—"}\nVerified at: ${r.verifyDate||"—"}\nVerification remarks: ${r.decisionRemarks||"—"}`);
+ alert(`Record #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nTemperature: ${tVal} (${r.assessment})\nMonitor / PLI: ${r.monitor} / ${r.shift}\nOIC/PLI Counter Checked By: ${cc?cc.checker:"Pending"}\nCounter Check Signature: ${cc&&ocSig(cc)?"Signed":"Not yet signed"}\nITME Code: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}\nVerification: ${r.verification}\nVerified by: ${r.verifier||"—"}\nVerified at: ${r.verifyDate||"—"}\nVerification remarks: ${r.decisionRemarks||"—"}`);
 }
 
 function exportCSV(){
@@ -1525,7 +1525,7 @@ function renderSheet(){
      const isNA=r.temp==="N/A"||String(r.assessment).includes("N/A");
      const cls=isNA?" na":(r.assessment==="Deviation"?" dev":"");
      const txt=isNA?"N/A":(typeof r.temp==="number"?r.temp.toFixed(1):r.temp);
-     return `<div class="rd${cls}" onclick="viewRecord(${r.id})" title="${esc(r.monitor)} • ${esc(r.time)} • Gauge: ${esc(r.thermo)} • ${esc(r.assessment)}"><span class="t">${esc(txt)}</span><br><span class="tm">${esc(r.time.slice(0,5))}</span></div>`;
+     return `<div class="rd${cls}" onclick="viewRecord(${r.id})" title="${esc(r.monitor)} • ${esc(r.time)} • ITME Code: ${esc(r.thermo)} • ${esc(r.assessment)}"><span class="t">${esc(txt)}</span><br><span class="tm">${esc(r.time.slice(0,5))}</span></div>`;
    }).join("")}</td>`;
  }).join("")}</tr>`).join("");
  $("sheetTable").innerHTML=head+`<tbody>${body}</tbody>`;
@@ -1604,7 +1604,7 @@ function counterPick(area){
 function viewCounter(id){
  let r=cdata.find(x=>x.id===id);
  const tVal=r.temp==="N/A"?"N/A":r.temp+"°C";
- alert(`Counter Check #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nCounter check: ${tVal} (${r.assessment})\nMonitoring reading: ${r.linkedTemp!==""?r.linkedTemp+"°C by "+r.linkedMonitor+" ("+r.linkedStamp+")":"—"}\nDifference: ${r.diff!==null&&r.diff!==undefined?r.diff.toFixed(1)+"°C":"—"} (${r.result})\nCounter checker: ${r.checker} / ${r.shift}\nThermometer / Gauge: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}`);
+ alert(`Counter Check #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nCounter check: ${tVal} (${r.assessment})\nMonitoring reading: ${r.linkedTemp!==""?r.linkedTemp+"°C by "+r.linkedMonitor+" ("+r.linkedStamp+")":"—"}\nDifference: ${r.diff!==null&&r.diff!==undefined?r.diff.toFixed(1)+"°C":"—"} (${r.result})\nCounter checker: ${r.checker} / ${r.shift}\nITME Code: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}`);
 }
 
 // Weekly Verification Module
