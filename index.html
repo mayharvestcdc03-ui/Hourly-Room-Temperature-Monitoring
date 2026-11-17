@@ -107,6 +107,42 @@ header{
   margin-bottom:16px;
   box-shadow:0 3px 12px rgba(20,45,70,0.06);
 }
+
+/* ===== Active Sheet / Tab Highlight ===== */
+.toolbar button.tab-btn {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1.5px solid #cbd5e1;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  position: relative;
+}
+.toolbar button.tab-btn:hover {
+  background: #e2e8f0;
+  color: var(--navy);
+  border-color: #94a3b8;
+}
+.toolbar button.tab-btn.active {
+  background: var(--navy, #12324a) !important;
+  color: #ffffff !important;
+  border-color: var(--navy, #12324a) !important;
+  box-shadow: 0 3px 10px rgba(18, 50, 74, 0.35) !important;
+  font-weight: 800;
+  transform: translateY(-1px);
+}
+.toolbar button.tab-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--navy, #12324a);
+}
+
 .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .toolbar strong{margin-right:auto;font-size:16px;color:var(--navy)}
 button{
@@ -517,11 +553,11 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
 <div class="wrap">
  <div class="toolbar">
    <strong>Monitoring Dashboard</strong>
-   <button class="secondary" onclick="showTab('entry')">New Monitoring Entry</button>
-   <button class="secondary" onclick="showTab('records')">Monitoring Records</button>
-   <button class="secondary" onclick="showTab('counter')">Counter Check</button>
-   <button class="secondary" onclick="showTab('verify')">Review</button>
-    <button class="secondary" onclick="showTab('extremes')">Highest &amp; Lowest</button>
+   <button class="secondary tab-btn active" id="tab-entry" onclick="showTab('entry')">📝 Data Entry</button>
+    <button class="secondary tab-btn" id="tab-records" onclick="showTab('records')">📋 Monitoring Records</button>
+    <button class="secondary tab-btn" id="tab-counter" onclick="showTab('counter')">⏱️ Counter Check</button>
+    <button class="secondary tab-btn" id="tab-verify" onclick="showTab('verify')">🔍 Review</button>
+    <button class="secondary tab-btn" id="tab-extremes" onclick="showTab('extremes')">🌡️ Highest &amp; Lowest</button>
    <button class="secondary" onclick="downloadSheetPDF()">📄 Download PDF</button>
    <button class="secondary" onclick="exportCSV()">Export CSV</button>
    <button class="danger" onclick="resetAllRecords()">Reset All Records</button>
@@ -1572,7 +1608,13 @@ $("entryForm").addEventListener("submit",e=>{
 });
 
 function showTab(tab){
- ["entry","records","counter","verify","extremes"].forEach(id=>$(id).classList.toggle("hidden",id!==tab));
+ const tabs=["entry","records","counter","verify","extremes"];
+ tabs.forEach(id=>{
+   const el=$(id);
+   if(el) el.classList.toggle("hidden",id!==tab);
+   const btn=$("tab-"+id);
+   if(btn) btn.classList.toggle("active",id===tab);
+ });
  window.scrollTo({top:0,behavior:"smooth"});
  if(tab==="records"){renderSheet()}
  else if(tab==="counter"){renderCounter();renderCounterSheet();renderCounterSigs()}
@@ -1924,7 +1966,7 @@ function printSheet(c){c=c||"ps";document.body.classList.add(c);window.print();d
 function renderCounterSheet(){
  let d=$("cSheetDate").value;if(!d){$("counterSheet").innerHTML="";return}
  let recs=cdata.filter(r=>r.date===d),hrs=[...new Set(recs.map(r=>Number(r.time.slice(0,2))))].sort((a,b)=>a-b);
- let cols=hrs.slice();while(cols.length<5)cols.push(null);
+ let cols=hrs.length ? hrs.slice() : [null];
  let label=new Date(d+"T00:00:00").toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"});
  let head=`<thead><tr><th colspan="${cols.length+2}" class="sheettitle"><div style="position:sticky;left:8px;width:max-content">COUNTERCHECKING — ${esc(label)}</div></th></tr><tr><th rowspan="2" class="c1">ROOM</th><th rowspan="2" class="c2">STD</th><th colspan="${cols.length}">TIME</th></tr><tr>${cols.map(h=>`<th>${h===null?"&nbsp;":pad(h)+":00"}</th>`).join("")}</tr></thead>`;
  let body=areas.map((a,i)=>`<tr><td class="room c1" style="cursor:pointer" onclick="counterPick(areas[${i}][0])" title="Counter check this area">${i+1}. ${esc(a[0])}</td><td class="c2">${esc(a[3])}</td>${cols.map(h=>{
