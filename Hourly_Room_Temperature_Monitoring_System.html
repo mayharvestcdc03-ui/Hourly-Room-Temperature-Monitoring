@@ -1186,22 +1186,22 @@ const personnel=[
 ];
 
 const areas=[
-  ["HOLDING ROOM 1",-2,0,"-2.0°C - 0.0°C"],
-  ["HOLDING ROOM 2",-2,0,"-2.0°C - 0.0°C"],
-  ["COLD STORAGE 1",-23,-18,"-23.0°C - -18.0°C"],
-  ["COLD STORAGE 2",-23,-18,"-23.0°C - -18.0°C"],
-  ["COLD STORAGE 3",-23,-18,"-23.0°C - -18.0°C"],
-  ["COLD STORAGE 4",-23,-18,"-23.0°C - -18.0°C"],
-  ["LOADING DOCK (OLD)",null,10,"≤10.0°C"],
-  ["LOADING DOCK (NEW)",null,10,"≤10.0°C"],
-  ["LAYERING AREA / CARTONING AREA",null,10,"≤10.0°C"],
-  ["BLAST FREEZING AREA 1",-35,-30,"-35.0°C - -30.0°C"],
-  ["BLAST FREEZING AREA 2",-35,-30,"-35.0°C - -30.0°C"],
-  ["LAYERING AREA",null,10,"≤10.0°C"],
-  ["BLAST FREEZING AREA 3",-35,-30,"-35.0°C - -30.0°C"],
-  ["BLAST FREEZING AREA 4",-35,-30,"-35.0°C - -30.0°C"],
-  ["CARTONING AREA",null,10,"≤10.0°C"],
-  ["ANTE ROOM",null,10,"≤10.0°C"]
+  ["HOLDING ROOM 1",-2,0,"-2.0°C to 0.0°C"],
+  ["HOLDING ROOM 2",-2,0,"-2.0°C to 0.0°C"],
+  ["HOLDING ROOM 3",-2,0,"-2.0°C to 0.0°C"],
+  ["COLD STORAGE 1",null,-18,"-18.0°C and below"],
+  ["COLD STORAGE 2",null,-18,"-18.0°C and below"],
+  ["COLD STORAGE 3",null,-18,"-18.0°C and below"],
+  ["COLD STORAGE 4",null,-18,"-18.0°C and below"],
+  ["LOADING DOCK (NEW)",null,10,"10.0°C max"],
+  ["LAYERING AREA / CARTONING AREA",null,10,"10.0°C max"],
+  ["BLAST FREEZING AREA 1",null,-30,"-30.0°C and below"],
+  ["BLAST FREEZING AREA 2",null,-30,"-30.0°C and below"],
+  ["LAYERING AREA",null,10,"10.0°C max"],
+  ["BLAST FREEZING AREA 3",null,-30,"-30.0°C and below"],
+  ["BLAST FREEZING AREA 4",null,-30,"-30.0°C and below"],
+  ["CARTONING AREA",null,10,"10.0°C max"],
+  ["ANTE ROOM",null,10,"10.0°C max"]
 ];
 
 const $=id=>document.getElementById(id);
@@ -2274,10 +2274,14 @@ let _currentQacDate = null;
 let _currentQacShift = null;
 
 function buildQAC075Html(d, sh){
-  const labelD = new Date(d + "T00:00:00").toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }).toUpperCase();
-  
+  const labelD = new Date(d + "T00:00:00").toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const shiftLabels = { "Day Shift": "Day Shift (5:00 AM – 2:00 PM)", "Mid Shift": "Mid Shift (1:00 PM – 10:00 PM)", "Night Shift": "Night Shift (9:00 PM – 6:00 AM)" };
+  const shLabel = shiftLabels[sh] || sh;
+  const nowGen = new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
   // Monitoring data & time slots
   const recs = data.filter(r => r.shift === sh && (r.date === d || (r.shift === "Night Shift" && Number(r.time.slice(0, 2)) >= 21)));
+  const devRecs = recs.filter(r => r.assessment === "Deviation");
   
   let baseHours = [];
   if (sh === "Day Shift") baseHours = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
@@ -2292,298 +2296,245 @@ function buildQAC075Html(d, sh){
     allHours.sort((a, b) => a - b);
   }
   
-  // Counter check data & 5 slots
+  // Counter check data
   const cRecs = cdata.filter(r => r.date === d);
-  const cHrs = [...new Set(cRecs.map(r => Number(r.time.slice(0, 2))))].sort((a, b) => a - b);
-  const cCols = cHrs.slice();
-  while (cCols.length < 5) cCols.push(null);
+  const cDiscrepancy = cRecs.filter(r => r.result === "Discrepancy" || r.assessment === "Deviation").length;
   
-  // Equipment metadata
-  const thermoRec = recs.find(r => r.thermo && r.thermo !== "N/A") || cRecs.find(r => r.thermo && r.thermo !== "N/A");
-  const thermoCode = (thermoRec && thermoRec.thermo) || "TH-01";
-  const thermoCalib = (thermoRec && thermoRec.calibration) || "—";
-  const stopwatchCode = "SW-01";
-  const stopwatchCalib = "N/A";
-  
-  // Deviations & Corrective actions
-  const devRecs = recs.filter(r => r.assessment === "Deviation");
-  const weekDone = (weeklyVer[wkStart(d)] || []).slice(-1)[0];
-  
-  const devTime = devRecs.length ? devRecs.map(r => r.time.slice(0, 5)).join(", ") : "—";
-  const devNature = devRecs.length ? devRecs.map(r => `${r.area} (${typeof r.temp === 'number' ? r.temp.toFixed(1) + '°C' : r.temp})`).join("; ") : "None / All parameters within standard";
-  const devAction = (weekDone && weekDone.dev && weekDone.dev.action) || (devRecs[0] && devRecs[0].remarks) || (devRecs.length ? "Re-calibrated gauge, adjusted refrigeration" : "None");
-  const devResult = (weekDone && weekDone.dev && weekDone.dev.result) || (devRecs.length ? "Temperature normalized" : "Normal operating temperature maintained");
-  const devDisp = (weekDone && weekDone.dev && weekDone.dev.disp) || (devRecs.length ? "Product inspected, compliant" : "Fit for processing and cold storage");
-  
-  const remarksArr = [...new Set([...recs.map(r => r.remarks).filter(Boolean), ...(weekDone && weekDone.remarks ? [weekDone.remarks] : [])])];
-  const remarksText = remarksArr.join(" • ") || "All rooms, cold storages, and blast freezers were checked and found operating within standard temperatures.";
-  
-  // Automatic Signatures
+  // Thermometer & Calibration info
+  const mThermo = recs.find(r => r.thermo && r.thermo !== "N/A") || {};
+  const cThermo = cRecs.find(r => r.thermo && r.thermo !== "N/A") || {};
+  const thermoUsed = mThermo.thermo || "100026-58098";
+  const calibDate = mThermo.calibration || "2026-10-26";
+  const cThermoUsed = cThermo.thermo || thermoUsed;
+  const cCalibDate = cThermo.calibration || calibDate;
+
+  // Signatures
   const sSigs = sheetSigs[d + "|" + sh] || [];
-  const pliName = (sSigs[0] && sSigs[0].name) || (recs[0] && recs[0].monitor) || "";
+  const pliName = (sSigs[0] && sSigs[0].name) || (recs[0] && recs[0].monitor) || "FIGUEROA, GRACE";
   const pliSig = (sSigs[0] && sSigs[0].sig) || (recs.find(r => r.signature) && recs.find(r => r.signature).signature) || "";
-  
+
   const cSigs = counterSigs[d] || counterSigs[d + "|" + sh] || [];
-  const chkName = (cSigs[0] && cSigs[0].name) || (cRecs[0] && cRecs[0].checker) || "";
+  const chkName = (cSigs[0] && cSigs[0].name) || (cRecs[0] && cRecs[0].checker) || "VIGO, ALICIA";
   const chkSig = (cSigs[0] && cSigs[0].sig) || "";
-  
-  const revName = (weekDone && weekDone.verifier) || "";
+
+  const weekDone = (weeklyVer[wkStart(d)] || []).slice(-1)[0];
+  const revName = (weekDone && weekDone.verifier) || "Quality Assurance Supervisor";
   const revSig = (weekDone && weekDone.sig) || "";
+  const revStatus = (weekDone && weekDone.decision) || (recs.some(r => r.verification === "Reviewed") ? "Reviewed" : "Pending QA Audit");
 
-  // Common Header Function
-  const renderHeader = () => `
-    <table style="width:100%;border-collapse:collapse;border:1.5px solid #000;font-family:Arial,sans-serif;margin-bottom:6px;">
-      <tr>
-        <td style="width:23%;border-right:1.5px solid #000;padding:4px 8px;vertical-align:middle;text-align:center;">
-          <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
-            <img src="assets/mhc-logo.png" style="height:38px;width:auto;object-fit:contain;" alt="MHC Logo" onerror="this.style.display='none'">
-            <div style="text-align:left;line-height:1.15;">
-              <strong style="font-size:12px;display:block;color:#000;font-weight:900;letter-spacing:0.02em;">MAY HARVEST</strong>
-              <strong style="font-size:12px;display:block;color:#000;font-weight:900;letter-spacing:0.02em;">CORPORATION</strong>
-            </div>
-          </div>
-        </td>
-        <td style="width:47%;border-right:1.5px solid #000;padding:6px;text-align:center;vertical-align:middle;">
-          <h2 style="margin:0;font-size:18px;font-weight:900;letter-spacing:0.04em;color:#000;">ROOM TEMPERATURE MONITORING</h2>
-        </td>
-        <td style="width:30%;padding:0;vertical-align:top;">
-          <table style="width:100%;border-collapse:collapse;font-size:9.5px;line-height:1.3;">
-            <tr>
-              <td style="border-right:1px solid #000;border-bottom:1px solid #000;padding:2px 5px;width:28%;font-weight:600;">Plant Code</td>
-              <td style="border-right:1px solid #000;border-bottom:1px solid #000;padding:2px 5px;width:22%;"></td>
-              <td style="border-right:1px solid #000;border-bottom:1px solid #000;padding:2px 5px;width:26%;font-weight:600;">Doc. Code</td>
-              <td style="border-bottom:1px solid #000;padding:2px 5px;width:24%;font-weight:700;">QAC075</td>
-            </tr>
-            <tr>
-              <td style="border-right:1px solid #000;border-bottom:1px solid #000;padding:2px 5px;font-weight:600;">Prod'n Code</td>
-              <td style="border-right:1px solid #000;border-bottom:1px solid #000;padding:2px 5px;"></td>
-              <td style="border-right:1px solid #000;border-bottom:1px solid #000;padding:2px 5px;font-weight:600;">Eff. Date</td>
-              <td style="border-bottom:1px solid #000;padding:2px 5px;font-size:9px;font-weight:700;">01 SEP. 2020</td>
-            </tr>
-            <tr>
-              <td style="border-right:1px solid #000;border-bottom:1px solid #000;padding:2px 5px;font-weight:600;">Date</td>
-              <td style="border-right:1px solid #000;border-bottom:1px solid #000;padding:2px 5px;font-weight:700;">${labelD}</td>
-              <td style="border-right:1px solid #000;border-bottom:1px solid #000;padding:2px 5px;font-weight:600;">Rev. Date</td>
-              <td style="border-bottom:1px solid #000;padding:2px 5px;font-size:9px;font-weight:700;">7 AUG. 2020</td>
-            </tr>
-            <tr>
-              <td style="border-right:1px solid #000;padding:2px 5px;font-weight:600;">Shift</td>
-              <td style="border-right:1px solid #000;padding:2px 5px;font-weight:700;">${esc(sh)}</td>
-              <td style="border-right:1px solid #000;padding:2px 5px;font-weight:600;">Rev. No.</td>
-              <td style="padding:2px 5px;font-weight:700;">02</td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>`;
-
-  // Page 1: Monitoring Table (All 16 rooms)
-  const monRowsHtml = areas.map((a, i) => {
+  // Build Table Rows
+  const tableRowsHtml = areas.map((a, i) => {
     const areaName = a[0];
-    const stdText = a[3];
-    const cells = allHours.map(h => {
-      const match = recs.find(r => r.area === areaName && Number(r.time.slice(0, 2)) === h);
-      if (!match) return `<td style="border:1px solid #000;padding:2px 1px;height:18px;">&nbsp;</td>`;
+    const stdSpec = a[3];
+    const areaRecs = recs.filter(r => r.area === areaName);
+    
+    // Hourly monitoring cells
+    const hourCells = allHours.map(h => {
+      const match = areaRecs.find(r => Number(r.time.slice(0, 2)) === h);
+      if (!match) return `<td style="border:1px solid #cbd5e1;text-align:center;color:#94a3b8;font-size:11px;">—</td>`;
       const isNA = match.temp === "N/A" || String(match.assessment).includes("N/A");
-      const val = isNA ? "N/A" : (typeof match.temp === "number" ? match.temp.toFixed(1) : match.temp);
-      return `<td style="border:1px solid #000;padding:2px 1px;height:18px;text-align:center;font-size:9.5px;font-weight:${isNA ? 'normal' : '700'};">${esc(val)}</td>`;
+      if (isNA) return `<td style="border:1px solid #cbd5e1;text-align:center;color:#64748b;font-weight:700;font-size:11px;background:#f8fafc;">N/A</td>`;
+      const isDev = match.assessment === "Deviation";
+      const val = typeof match.temp === "number" ? match.temp.toFixed(1) + "°C" : match.temp;
+      return `<td style="border:1px solid ${isDev ? '#fca5a5' : '#cbd5e1'};text-align:center;color:${isDev ? '#b91c1c' : '#0f172a'};font-weight:700;font-size:11px;background:${isDev ? '#fee2e2' : '#ffffff'};">${esc(val)}</td>`;
     }).join("");
 
-    return `<tr>
-      <td style="border:1px solid #000;padding:2px 5px;text-align:left;font-size:9px;font-weight:700;white-space:nowrap;">${i + 1}. &nbsp;${esc(areaName)}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:center;font-size:9px;white-space:nowrap;">${esc(stdText)}</td>
-      ${cells}
-    </tr>`;
-  }).join("");
+    // OIC/PLI CC Cell
+    const ccMatch = cRecs.filter(r => r.area === areaName).sort((x, y) => y.id - x.id)[0];
+    let ccHtml = `<span style="color:#94a3b8;font-size:11px;">Pending</span>`;
+    if (ccMatch) {
+      if (ccMatch.temp === "N/A") {
+        ccHtml = `<b style="color:#64748b;">N/A</b><small style="display:block;color:#64748b;font-size:9.5px;">(Matched)</small>`;
+      } else {
+        const isDiscrepancy = ccMatch.result === "Discrepancy" || ccMatch.assessment === "Deviation";
+        const ccVal = typeof ccMatch.temp === "number" ? ccMatch.temp.toFixed(1) + "°C" : ccMatch.temp;
+        ccHtml = `<div style="font-weight:800;color:${isDiscrepancy ? '#dc2626' : '#16a34a'};font-size:11.5px;">${esc(ccVal)}</div><small style="display:block;color:${isDiscrepancy ? '#dc2626' : '#16a34a'};font-weight:700;font-size:9.5px;">(${isDiscrepancy ? 'Discrepancy' : 'Matched'})</small>`;
+      }
+    }
 
-  // Countercheck Rows 1 to 12 for Page 1
-  const ccRowsP1 = areas.slice(0, 12).map((a, i) => {
-    const areaName = a[0];
-    const stdText = a[3];
-    const cells = cCols.map(h => {
-      if (h === null) return `<td style="border:1px solid #000;padding:2px 2px;height:18px;">&nbsp;</td>`;
-      const match = cRecs.find(r => r.area === areaName && Number(r.time.slice(0, 2)) === h);
-      if (!match) return `<td style="border:1px solid #000;padding:2px 2px;height:18px;">&nbsp;</td>`;
-      const isNA = match.temp === "N/A" || String(match.assessment).includes("N/A");
-      const val = isNA ? "N/A" : (typeof match.temp === "number" ? match.temp.toFixed(1) : match.temp);
-      return `<td style="border:1px solid #000;padding:2px 2px;height:18px;text-align:center;font-size:9.5px;font-weight:${isNA ? 'normal' : '700'};">${esc(val)}</td>`;
-    }).join("");
+    // Remarks cell
+    const remMatch = areaRecs.find(r => r.remarks) || ccMatch;
+    const remVal = (remMatch && remMatch.remarks) ? remMatch.remarks : (areaRecs.length ? "N/A" : "—");
 
     return `<tr>
-      <td style="border:1px solid #000;padding:2px 5px;text-align:left;font-size:9px;font-weight:700;white-space:nowrap;">${i + 1}. &nbsp;${esc(areaName)}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:center;font-size:9px;white-space:nowrap;">${esc(stdText)}</td>
-      ${cells}
+      <td style="border:1px solid #cbd5e1;text-align:center;font-size:11px;font-weight:700;color:#64748b;padding:5px 2px;">${i + 1}</td>
+      <td style="border:1px solid #cbd5e1;text-align:left;font-size:11px;font-weight:750;color:#0e2940;padding:5px 8px;white-space:nowrap;">${esc(areaName)}</td>
+      <td style="border:1px solid #cbd5e1;text-align:center;font-size:10.5px;color:#475569;padding:5px 4px;white-space:nowrap;">${esc(stdSpec)}</td>
+      ${hourCells}
+      <td style="border:1px solid #cbd5e1;text-align:center;padding:4px 6px;background:#f8fafc;white-space:nowrap;">${ccHtml}</td>
+      <td style="border:1px solid #cbd5e1;text-align:left;font-size:10.5px;color:#475569;padding:5px 8px;">${esc(remVal)}</td>
     </tr>`;
   }).join("");
-
-  // Countercheck Rows 13 to 16 for Page 2
-  const ccRowsP2 = areas.slice(12).map((a, i) => {
-    const areaName = a[0];
-    const stdText = a[3];
-    const cells = cCols.map(h => {
-      if (h === null) return `<td style="border:1px solid #000;padding:2px 2px;height:18px;">&nbsp;</td>`;
-      const match = cRecs.find(r => r.area === areaName && Number(r.time.slice(0, 2)) === h);
-      if (!match) return `<td style="border:1px solid #000;padding:2px 2px;height:18px;">&nbsp;</td>`;
-      const isNA = match.temp === "N/A" || String(match.assessment).includes("N/A");
-      const val = isNA ? "N/A" : (typeof match.temp === "number" ? match.temp.toFixed(1) : match.temp);
-      return `<td style="border:1px solid #000;padding:2px 2px;height:18px;text-align:center;font-size:9.5px;font-weight:${isNA ? 'normal' : '700'};">${esc(val)}</td>`;
-    }).join("");
-
-    return `<tr>
-      <td style="border:1px solid #000;padding:2px 5px;text-align:left;font-size:9px;font-weight:700;white-space:nowrap;">${i + 13}. &nbsp;${esc(areaName)}</td>
-      <td style="border:1px solid #000;padding:2px 4px;text-align:center;font-size:9px;white-space:nowrap;">${esc(stdText)}</td>
-      ${cells}
-    </tr>`;
-  }).join("");
-
-  // Signatures HTML Box with Automatic Signature Detection
-  const sigBox = (label, sigImg, nameVal) => `
-    <td style="border-right:1px solid #000;border-bottom:1px solid #000;height:62px;vertical-align:bottom;padding:2px 6px;text-align:center;width:33.33%;">
-      <div style="height:44px;display:flex;align-items:center;justify-content:center;">
-        ${sigImg ? `<img src="${sigImg}" style="max-height:42px;max-width:180px;object-fit:contain;display:block;" alt="Signature">` : (nameVal ? `<span style="font-family:'Segoe Script',cursive,sans-serif;font-size:15px;color:#1e3a8a;">${esc(nameVal)}</span>` : '<span style="color:#94a3b8;font-size:8.5px;">&nbsp;</span>')}
-      </div>
-      <div style="font-weight:700;font-size:9.5px;border-top:1px solid #000;padding-top:2px;white-space:nowrap;">
-        ${esc(nameVal || "__________________________")}
-      </div>
-    </td>`;
 
   return `
-  <!-- PAGE 1 OF 2 -->
-  <div class="qac-page-sheet" id="qacPage1">
-    ${renderHeader()}
+  <div style="background:#ffffff;color:#0f172a;font-family:'Segoe UI',Arial,sans-serif;padding:20px 24px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.08);max-width:1160px;margin:0 auto;box-sizing:border-box;">
+    
+    <!-- Top Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2.5px solid #10b981;padding-bottom:12px;margin-bottom:12px;gap:12px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img src="assets/mhc-logo.png" style="height:46px;width:auto;object-fit:contain;" alt="MHC Logo" onerror="this.style.display='none'">
+        <div>
+          <h1 style="margin:0;font-size:18px;font-weight:900;color:#065f46;letter-spacing:0.02em;">MAY HARVEST CORPORATION</h1>
+          <p style="margin:2px 0 0;font-size:10.5px;font-weight:750;color:#0d9488;letter-spacing:0.04em;">COLD STORAGE &amp; CLEAN ROOM TEMPERATURE MONITORING, COUNTER-CHECKING &amp; QA AUDIT REPORT</p>
+        </div>
+      </div>
+      <div style="text-align:right;font-size:10.5px;color:#64748b;line-height:1.4;">
+        <div><b>Doc Ref:</b> <span style="color:#0f172a;font-weight:700;">QAC075</span></div>
+        <div><b>Revision:</b> Rev. 02 (Cloud Live)</div>
+        <div><b>Generated:</b> ${nowGen}</div>
+      </div>
+    </div>
 
-    <!-- 1. MONITORING TABLE -->
-    <table style="width:100%;border-collapse:collapse;border:1.5px solid #000;font-size:9.5px;margin-bottom:6px;">
-      <thead>
-        <tr>
-          <th colspan="${2 + allHours.length}" style="border-bottom:1.5px solid #000;padding:3px;font-size:11px;font-weight:900;letter-spacing:0.04em;text-align:center;background:#fff;">
-            MONITORING
-          </th>
-        </tr>
-        <tr>
-          <th rowspan="2" style="border-right:1px solid #000;border-bottom:1px solid #000;width:24%;padding:3px 4px;font-weight:800;text-align:center;">ROOM</th>
-          <th rowspan="2" style="border-right:1.5px solid #000;border-bottom:1px solid #000;width:13%;padding:3px 4px;font-weight:800;text-align:center;">STD</th>
-          <th colspan="${allHours.length}" style="border-bottom:1px solid #000;padding:2px;font-weight:800;text-align:center;">TIME</th>
-        </tr>
-        <tr>
-          ${allHours.map(h => `<th style="border-right:1px solid #000;border-bottom:1px solid #000;padding:2px 1px;font-size:9px;font-weight:700;text-align:center;">${pad(h)}:00</th>`).join("")}
-        </tr>
-      </thead>
-      <tbody>
-        ${monRowsHtml}
-      </tbody>
-    </table>
+    <!-- Green KPI Summary Strip -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px 14px;margin-bottom:12px;gap:8px;">
+      <div>
+        <small style="display:block;font-size:9.5px;font-weight:750;color:#15803d;letter-spacing:0.04em;">MONITORING DATE</small>
+        <b style="font-size:12px;color:#0f172a;">${labelD}</b>
+      </div>
+      <div>
+        <small style="display:block;font-size:9.5px;font-weight:750;color:#15803d;letter-spacing:0.04em;">SHIFT SCHEDULE</small>
+        <b style="font-size:12px;color:#0f172a;">${esc(shLabel)}</b>
+      </div>
+      <div>
+        <small style="display:block;font-size:9.5px;font-weight:750;color:#15803d;letter-spacing:0.04em;">MONITORED UNITS</small>
+        <b style="font-size:12px;color:#0f172a;">${recs.length} Logged / ${devRecs.length} Deviation(s)</b>
+      </div>
+      <div>
+        <small style="display:block;font-size:9.5px;font-weight:750;color:#15803d;letter-spacing:0.04em;">COUNTER-CHECKS &amp; VERIFICATION</small>
+        <b style="font-size:12px;color:#0f172a;">${cRecs.length} CC Checked / ${cDiscrepancy} Discrepancy</b>
+      </div>
+    </div>
 
-    <!-- 2. COUNTERCHECKING TABLE (PART 1: ROWS 1 TO 12) -->
-    <table style="width:100%;border-collapse:collapse;border:1.5px solid #000;font-size:9.5px;">
-      <thead>
-        <tr>
-          <th colspan="${2 + cCols.length}" style="border-bottom:1.5px solid #000;padding:3px;font-size:11px;font-weight:900;letter-spacing:0.04em;text-align:center;background:#fff;">
-            COUNTERCHECKING
-          </th>
-        </tr>
-        <tr>
-          <th rowspan="2" style="border-right:1px solid #000;border-bottom:1px solid #000;width:24%;padding:3px 4px;font-weight:800;text-align:center;">ROOM</th>
-          <th rowspan="2" style="border-right:1.5px solid #000;border-bottom:1px solid #000;width:13%;padding:3px 4px;font-weight:800;text-align:center;">STD</th>
-          <th colspan="${cCols.length}" style="border-bottom:1px solid #000;padding:2px;font-weight:800;text-align:center;">TIME</th>
-        </tr>
-        <tr>
-          ${cCols.map((h, idx) => `<th style="border-right:1px solid #000;border-bottom:1px solid #000;padding:2px 1px;font-size:9px;font-weight:700;text-align:center;width:12.6%;">${h !== null ? `${pad(h)}:00` : `Check ${idx + 1}`}</th>`).join("")}
-        </tr>
-      </thead>
-      <tbody>
-        ${ccRowsP1}
-      </tbody>
-    </table>
-  </div>
+    <!-- Thermometer / ITME Info Cards (Side-by-Side) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <!-- Monitoring ITME Card -->
+      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;">
+        <div style="font-size:10px;font-weight:800;color:#0e2940;letter-spacing:0.04em;margin-bottom:6px;">
+          THERMOMETER / ITME INFORMATION (MONITORING)
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:10.5px;">
+          <div><span style="color:#64748b;">Thermometer Used</span><br><b style="color:#0f172a;">${esc(thermoUsed)}</b></div>
+          <div><span style="color:#64748b;">ITME / Serial No.</span><br><b style="color:#0f172a;">${esc(thermoUsed)}</b></div>
+          <div><span style="color:#64748b;">Calibration Date</span><br><b style="color:#0f172a;">${esc(calibDate)}</b></div>
+          <div><span style="color:#64748b;">Status</span><br><b style="color:#16a34a;">Calibrated</b></div>
+        </div>
+      </div>
 
-  <div class="qac-page-break"></div>
+      <!-- Counter-Check ITME Card -->
+      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;">
+        <div style="font-size:10px;font-weight:800;color:#0e2940;letter-spacing:0.04em;margin-bottom:6px;">
+          THERMOMETER / ITME INFORMATION (COUNTER-CHECK)
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:10.5px;">
+          <div><span style="color:#64748b;">Thermometer Used</span><br><b style="color:#0f172a;">${esc(cThermoUsed)}</b></div>
+          <div><span style="color:#64748b;">ITME / Serial No.</span><br><b style="color:#0f172a;">${esc(cThermoUsed)}</b></div>
+          <div><span style="color:#64748b;">Calibration Date</span><br><b style="color:#0f172a;">${esc(cCalibDate)}</b></div>
+          <div><span style="color:#64748b;">Status</span><br><b style="color:#16a34a;">Calibrated</b></div>
+        </div>
+      </div>
+    </div>
 
-  <!-- PAGE 2 OF 2 -->
-  <div class="qac-page-sheet" id="qacPage2" style="margin-top:16px;">
-    ${renderHeader()}
+    <!-- Main Unified Table -->
+    <div style="overflow-x:auto;margin-bottom:14px;">
+      <table style="width:100%;border-collapse:collapse;border:1.5px solid #94a3b8;font-size:11px;">
+        <thead>
+          <tr style="background:#e0e7ff;color:#1e293b;">
+            <th rowspan="2" style="border:1px solid #94a3b8;width:30px;padding:6px 2px;text-align:center;">#</th>
+            <th rowspan="2" style="border:1px solid #94a3b8;width:190px;padding:6px 8px;text-align:left;">ROOM / FACILITY</th>
+            <th rowspan="2" style="border:1px solid #94a3b8;width:115px;padding:6px 4px;text-align:center;">STD SPEC</th>
+            <th colspan="${allHours.length}" style="border:1px solid #94a3b8;padding:4px;text-align:center;font-weight:800;letter-spacing:0.03em;">MONITORING TIME (HOURLY IN °C)</th>
+            <th rowspan="2" style="border:1px solid #94a3b8;width:95px;padding:6px 4px;text-align:center;">OIC/PLI CC</th>
+            <th rowspan="2" style="border:1px solid #94a3b8;width:130px;padding:6px 8px;text-align:left;">REMARKS / ACTIONS</th>
+          </tr>
+          <tr style="background:#f1f5f9;color:#334155;">
+            ${allHours.map(h => `<th style="border:1px solid #94a3b8;padding:4px 2px;text-align:center;font-size:10px;font-weight:700;">${pad(h)}:00</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRowsHtml}
+        </tbody>
+      </table>
+    </div>
 
-    <!-- COUNTERCHECKING CONTINUATION (ROWS 13 TO 16) -->
-    <table style="width:100%;border-collapse:collapse;border:1.5px solid #000;font-size:9.5px;margin-bottom:8px;">
-      <thead>
-        <tr>
-          <th style="border-right:1px solid #000;border-bottom:1px solid #000;width:24%;padding:3px 4px;font-weight:800;text-align:center;">ROOM</th>
-          <th style="border-right:1.5px solid #000;border-bottom:1px solid #000;width:13%;padding:3px 4px;font-weight:800;text-align:center;">STD</th>
-          <th colspan="${cCols.length}" style="border-bottom:1px solid #000;padding:2px;font-weight:800;text-align:center;">TIME</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${ccRowsP2}
-      </tbody>
-    </table>
+    <!-- QA Pre-Verification Checklist (QAC075) -->
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:9px 14px;margin-bottom:14px;">
+      <div style="color:#15803d;font-weight:800;font-size:10.5px;letter-spacing:0.04em;margin-bottom:6px;">
+        QA PRE-VERIFICATION CHECKLIST (QAC075)
+      </div>
+      <div style="display:flex;gap:28px;flex-wrap:wrap;font-size:11px;color:#1e293b;font-weight:600;">
+        <label style="display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" checked disabled style="accent-color:#16a34a;width:15px;height:15px;">
+          1. Perform ice point verification
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" checked disabled style="accent-color:#16a34a;width:15px;height:15px;">
+          2. Calibrated Thermometer
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" checked disabled style="accent-color:#16a34a;width:15px;height:15px;">
+          3. Clean and sanitized thermometer
+        </label>
+      </div>
+    </div>
 
-    <!-- SANITATION & EQUIPMENT ROW -->
-    <table style="width:100%;border-collapse:collapse;border:none;margin-bottom:8px;font-size:9px;font-family:Arial,sans-serif;">
-      <tr>
-        <td style="width:40%;vertical-align:top;padding-right:10px;">
-          <strong style="display:block;font-size:10px;margin-bottom:3px;color:#000;">SANITATION VERIFICATION METHODS</strong>
-          <div>Is the thermometer Clean and Sanitize prior to use? <b style="text-decoration:underline;">YES</b> / NO</div>
-          <div style="font-size:8.5px;color:#333;margin-top:2px;">If YES, proceed checking Internal Product Temperature.</div>
-          <div style="font-size:8.5px;color:#333;">If NO, Clean and Sanitize the thermometer probe first before use.</div>
-        </td>
-        <td style="width:30%;vertical-align:top;padding-right:10px;">
-          <strong style="display:block;font-size:10px;margin-bottom:3px;color:#000;">STOP WATCH</strong>
-          <div style="margin-bottom:3px;">ITME Code: <span style="display:inline-block;border-bottom:1px solid #000;min-width:110px;padding:0 4px;font-weight:700;">${esc(stopwatchCode)}</span></div>
-          <div>Calibration Due Date: <span style="display:inline-block;border-bottom:1px solid #000;min-width:70px;padding:0 4px;font-weight:700;">${esc(stopwatchCalib)}</span></div>
-        </td>
-        <td style="width:30%;vertical-align:top;">
-          <strong style="display:block;font-size:10px;margin-bottom:3px;color:#000;">THERMOMETER</strong>
-          <div style="margin-bottom:3px;">ITME Code: <span style="display:inline-block;border-bottom:1px solid #000;min-width:110px;padding:0 4px;font-weight:700;">${esc(thermoCode)}</span></div>
-          <div>Calibration Due Date: <span style="display:inline-block;border-bottom:1px solid #000;min-width:70px;padding:0 4px;font-weight:700;">${esc(thermoCalib)}</span></div>
-        </td>
-      </tr>
-    </table>
+    <!-- 3 Signature Cards -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;">
+      <!-- Card 1: MONITORED BY -->
+      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px;">
+        <div style="font-weight:800;font-size:11px;color:#0e2940;margin-bottom:8px;">
+          1. MONITORED BY (PLI MONITOR)
+        </div>
+        <div style="background:#fff;border:1.5px dashed #cbd5e1;border-radius:6px;height:65px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+          ${pliSig ? `<img src="${pliSig}" style="max-height:55px;max-width:200px;object-fit:contain;" alt="Signature">` : `<span style="color:#94a3b8;font-style:italic;font-size:11px;">Digital Signature Pending</span>`}
+        </div>
+        <div style="font-size:10.5px;color:#334155;line-height:1.45;">
+          <div>Name: <b>${esc(pliName)}</b></div>
+          <div>Designation: <b>Cold Storage PLI Monitor</b></div>
+          <div>Date &amp; Shift: <b>${esc(d)} • ${esc(sh)}</b></div>
+        </div>
+      </div>
 
-    <!-- CORRECTIVE ACTION & REMARKS ROW -->
-    <table style="width:100%;border-collapse:collapse;border:none;margin-bottom:10px;font-size:9px;font-family:Arial,sans-serif;">
-      <tr>
-        <td style="width:52%;vertical-align:top;padding-right:12px;">
-          <strong style="display:block;font-size:10px;margin-bottom:5px;color:#000;">CORRECTION / CORRECTIVE ACTION TAKEN:</strong>
-          <div style="margin-bottom:4px;">Time: <span style="display:inline-block;border-bottom:1px solid #000;min-width:120px;padding:0 4px;font-weight:700;">${esc(devTime)}</span></div>
-          <div style="margin-bottom:4px;">Nature of Deviation: <span style="display:inline-block;border-bottom:1px solid #000;width:calc(100% - 130px);padding:0 4px;font-weight:700;">${esc(devNature)}</span></div>
-          <div style="margin-bottom:4px;">Action Taken: <span style="display:inline-block;border-bottom:1px solid #000;width:calc(100% - 90px);padding:0 4px;font-weight:700;">${esc(devAction)}</span></div>
-          <div style="margin-bottom:4px;">Result of Action Taken: <span style="display:inline-block;border-bottom:1px solid #000;width:calc(100% - 145px);padding:0 4px;font-weight:700;">${esc(devResult)}</span></div>
-          <div style="margin-bottom:4px;">Product Disposition: <span style="display:inline-block;border-bottom:1px solid #000;width:calc(100% - 130px);padding:0 4px;font-weight:700;">${esc(devDisp)}</span></div>
-          <div style="margin-bottom:4px;">Verified By: <span style="display:inline-block;border-bottom:1px solid #000;width:calc(100% - 85px);padding:0 4px;font-weight:700;">${esc(revName || "—")}</span></div>
-        </td>
-        <td style="width:48%;vertical-align:top;">
-          <div style="border:1.5px solid #000;height:120px;padding:6px;position:relative;box-sizing:border-box;">
-            <strong style="position:absolute;top:4px;left:6px;font-size:10px;color:#000;">REMARKS</strong>
-            <div style="margin-top:16px;font-size:9.5px;line-height:1.4;color:#111;">
-              ${esc(remarksText)}
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+      <!-- Card 2: COUNTER-CHECKED BY -->
+      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px;">
+        <div style="font-weight:800;font-size:11px;color:#0e2940;margin-bottom:8px;">
+          2. COUNTER-CHECKED BY (OIC / PLI)
+        </div>
+        <div style="background:#fff;border:1.5px dashed #cbd5e1;border-radius:6px;height:65px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+          ${chkSig ? `<img src="${chkSig}" style="max-height:55px;max-width:200px;object-fit:contain;" alt="Signature">` : `<span style="color:#94a3b8;font-style:italic;font-size:11px;">Digital Signature Pending</span>`}
+        </div>
+        <div style="font-size:10.5px;color:#334155;line-height:1.45;">
+          <div>Name: <b>${esc(chkName)}</b></div>
+          <div>Designation: <b>Cold Storage OIC / Counter-Checker</b></div>
+          <div>Status: <b>${cRecs.length} Room(s) Counter-Checked</b></div>
+        </div>
+      </div>
 
-    <!-- OFFICIAL SIGNATURES TABLE -->
-    <table style="width:100%;border-collapse:collapse;border:1.5px solid #000;font-size:9.5px;text-align:center;font-family:Arial,sans-serif;">
-      <thead>
-        <tr>
-          <th style="border-right:1px solid #000;border-bottom:1px solid #000;width:33.33%;padding:3px 6px;text-align:left;font-weight:800;font-size:9px;">MONITORED BY:</th>
-          <th style="border-right:1px solid #000;border-bottom:1px solid #000;width:33.33%;padding:3px 6px;text-align:left;font-weight:800;font-size:9px;">COUNTERCHECKED BY:</th>
-          <th style="border-bottom:1px solid #000;width:33.33%;padding:3px 6px;text-align:left;font-weight:800;font-size:9px;">REVIEWED BY:</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          ${sigBox("MONITORED BY", pliSig, pliName)}
-          ${sigBox("COUNTERCHECKED BY", chkSig, chkName)}
-          ${sigBox("REVIEWED BY", revSig, revName)}
-        </tr>
-        <tr style="background:#fff;font-weight:800;font-size:9.5px;">
-          <td style="border-right:1px solid #000;padding:3px 6px;text-align:center;">PRODUCTION LINE INSPECTOR</td>
-          <td style="border-right:1px solid #000;padding:3px 6px;text-align:center;">TEAM LEADER</td>
-          <td style="padding:3px 6px;text-align:center;">OIC-PLI</td>
-        </tr>
-      </tbody>
-    </table>
+      <!-- Card 3: VERIFIED & APPROVED BY -->
+      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px;">
+        <div style="font-weight:800;font-size:11px;color:#0e2940;margin-bottom:8px;">
+          3. VERIFIED &amp; APPROVED BY (QA)
+        </div>
+        <div style="background:#fff;border:1.5px dashed #cbd5e1;border-radius:6px;height:65px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+          ${revSig ? `<img src="${revSig}" style="max-height:55px;max-width:200px;object-fit:contain;" alt="Signature">` : `<span style="color:#94a3b8;font-style:italic;font-size:11px;">QA Digital Signature Pending</span>`}
+        </div>
+        <div style="font-size:10.5px;color:#334155;line-height:1.45;">
+          <div>Name: <b>${esc(revName)}</b></div>
+          <div>Designation: <b>Plant Quality Assurance / Supervisor</b></div>
+          <div>Audit Status: <b>${esc(revStatus)}</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Action Buttons -->
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">
+      <button type="button" class="qac-print-btn" onclick="downloadCurrentQACReport()" style="background:#15803d;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;">
+        🖨️ Print / Save as PDF
+      </button>
+      <button type="button" onclick="closeQACReportModal()" style="background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;padding:8px 16px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;">
+        Close
+      </button>
+    </div>
+
   </div>`;
 }
 
