@@ -673,45 +673,84 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
 
  <section id="verify" class="panel hidden">
   <h2>4. Weekly Quality Review</h2>
-  <div class="notice">Quality personnel review the monitoring records of <b>one whole week (Monday to Sunday)</b> in a single review. Compare the readings with the standards, check the deviations and remarks, then sign. Every pending record in the selected week is marked with your decision. Night shift records follow the advance date of the sheet.</div>
-  <div class="tablewrap"><table style="min-width:860px"><thead><tr><th>Week</th><th>Entries</th><th>Deviations</th><th>Pending</th><th>Status</th><th>Reviewed By</th><th>Action</th></tr></thead><tbody id="weekBody"></tbody></table></div>
-  <div id="weekEditor" class="panel hidden" style="margin-top:16px;background:#f8fafb">
-   <h3 id="weekTitle"></h3>
-   <div id="weekSummary" class="notice"></div>
-   <h3>Monitoring Sheets in this Week</h3>
-   <div class="tablewrap"><table style="min-width:760px"><thead><tr><th>Sheet Date</th><th>Shift</th><th>Entries</th><th>Deviations</th><th>Signed by Monitor</th><th>Sheet</th></tr></thead><tbody id="weekSheets"></tbody></table></div>
-   <h3 style="margin-top:18px">Deviations and Remarks</h3>
-   <div class="tablewrap"><table style="min-width:760px"><thead><tr><th>Date / Time</th><th>Area</th><th>Reading</th><th>Standard</th><th>Monitor / Shift</th><th>Remarks / Action</th></tr></thead><tbody id="weekFlags"></tbody></table></div>
-   <div id="weekDone" class="hidden"></div>
-   <div id="weekForm">
-    <h3 style="margin-top:18px">Review this Week</h3>
-    <div class="grid">
-     <div class="field"><label for="verifier">REVIEWED BY (QUALITY PERSONNEL) *</label><select id="verifier"></select><input id="verifierOther" class="hidden" placeholder="Specify complete name"></div>
-     <div class="field"><label for="verifyDate">DATE / TIME REVIEWED *</label><input id="verifyDate" type="datetime-local"></div>
-     <div class="field wide"><label for="verifyRemarks">REVIEW REMARKS *</label><textarea id="verifyRemarks" rows="2" placeholder="Record review findings, required follow-up, or reason for rejection"></textarea></div>
-    </div>
-    <h3 style="margin-top:18px">Review Questions</h3>
-    <div class="grid">
-     <div class="field wide"><label for="vq1">1. Who is the PLI in charge of monitoring the blast freezing activity? *</label><select id="vq1"></select><input id="vq1Other" class="hidden" placeholder="Specify complete name"></div>
-     <div class="field wide"><label for="vq2">2. Does the PLI perform ice point verification prior to use? *</label><select id="vq2"><option value="">Select answer</option><option>Yes</option><option>No</option></select></div>
-     <div class="field wide"><label for="vq3">3. Is the PLI aware of the calibration due date of the measuring equipment used for monitoring? *</label><select id="vq3"><option value="">Select answer</option><option>Yes</option><option>No</option></select></div>
-     <div class="field wide"><label for="vq4">4. Is the thermometer cleaned and sanitized prior to use? *</label><select id="vq4"><option value="">Select answer</option><option>Yes</option><option>No</option></select></div>
-    </div>
-    <div id="devBlock" class="hidden">
-     <h3 style="margin-top:18px">Deviation Follow-up</h3>
-     <div class="notice alert">This week has temperature deviation(s). Complete the action taken, its result, and the product disposition.</div>
-     <div class="grid">
-      <div class="field"><label for="vAction">ACTION TAKEN *</label><input id="vAction" placeholder="e.g. Relocated to CS2, checked refrigerant"></div>
-      <div class="field"><label for="vResult">RESULT OF ACTION TAKEN *</label><input id="vResult" placeholder="e.g. Temperature stabilized to -18.5°C"></div>
-      <div class="field wide"><label for="vDisp">PRODUCT DISPOSITION *</label><input id="vDisp" placeholder="e.g. Products inspected, sensory evaluation passed, fit for distribution"></div>
+  <div class="notice">
+    Review monitoring records for each week (Monday to Sunday) and sign below to officially approve or note remarks.
+  </div>
+  <div class="tablewrap">
+    <table style="min-width:820px">
+      <thead>
+        <tr>
+          <th>Week</th>
+          <th>Entries</th>
+          <th>Deviations</th>
+          <th>Status</th>
+          <th>Reviewed By &amp; Signature</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="weekBody"></tbody>
+    </table>
+  </div>
+
+  <div id="weekEditor" class="panel hidden" style="margin-top:14px;background:#f8fafc;border:1.5px solid #cbd5e1;padding:16px;border-radius:10px">
+   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-bottom:1px solid #e2e8f0;padding-bottom:10px;margin-bottom:12px">
+     <div>
+       <h3 id="weekTitle" style="margin:0;font-size:16px;color:var(--navy)"></h3>
+       <div id="weekSummary" style="font-size:12px;color:#475569;margin-top:2px"></div>
      </div>
-    </div>
-    <h3 style="margin-top:18px">Quality Personnel Signature</h3>
-    <div class="grid"><div class="field"><label for="decision">REVIEW DECISION *</label><select id="decision"><option value="Reviewed">Reviewed (Approve week)</option><option value="Rejected">Rejected (Return with remarks)</option></select></div></div>
-    <canvas id="vPad" class="sigpad" aria-label="Quality personnel signature"></canvas>
-    <div class="actions"><button type="button" onclick="submitWeek()">Submit Review</button><button type="button" class="secondary" onclick="clearPad($('vPad'))">Clear Signature</button><button type="button" class="secondary" onclick="closeWeek()">Cancel</button></div>
+     <button type="button" class="secondary" onclick="closeWeek()" style="padding:4px 10px;font-size:12px">✕ Close</button>
    </div>
-   <div id="weekCloseBtn" class="actions hidden" style="margin-top:14px"><button type="button" class="secondary" onclick="closeWeek()">Close Review</button></div>
+
+   <!-- Deviations summary (shown only if deviations exist) -->
+   <div id="weekFlagsBlock" class="hidden">
+     <h4 style="margin:10px 0 6px;color:#a42b21;font-size:12.5px">⚠️ Temperature Deviations in this Week</h4>
+     <div class="tablewrap"><table style="font-size:11.5px"><thead style="background:#fee2e2"><tr><th>Date / Time</th><th>Area</th><th>Reading</th><th>Standard</th><th>Monitor</th><th>Remarks</th></tr></thead><tbody id="weekFlags"></tbody></table></div>
+   </div>
+
+   <!-- Existing Review Result (shows reviewer name, date, remarks, and signature image) -->
+   <div id="weekDone" class="hidden" style="margin:12px 0"></div>
+
+   <!-- Compact Review Form -->
+   <div id="weekForm">
+     <h4 style="margin:12px 0 8px;color:var(--navy);font-size:13px;border-top:1px dashed #cbd5e1;padding-top:10px">Sign &amp; Complete Review</h4>
+     <div class="grid">
+      <div class="field"><label for="verifier">REVIEWED BY (QUALITY PERSONNEL) *</label><select id="verifier"></select><input id="verifierOther" class="hidden" placeholder="Specify complete name"></div>
+      <div class="field"><label for="verifyDate">DATE / TIME REVIEWED *</label><input id="verifyDate" type="datetime-local"></div>
+      <div class="field"><label for="decision">REVIEW DECISION *</label><select id="decision"><option value="Reviewed">Reviewed (Approve week)</option><option value="Rejected">Rejected (Return with remarks)</option></select></div>
+      <div class="field"><label for="verifyRemarks">REVIEW REMARKS *</label><input id="verifyRemarks" placeholder="Record review findings or remarks"></div>
+     </div>
+
+     <h4 style="margin:12px 0 6px;color:var(--navy);font-size:12.5px">Review Questions</h4>
+     <div class="grid" style="grid-template-columns:repeat(2,1fr);gap:8px">
+      <div class="field"><label for="vq1" style="font-size:11px">1. PLI in charge of blast freezing *</label><select id="vq1"></select><input id="vq1Other" class="hidden" placeholder="Specify name"></div>
+      <div class="field"><label for="vq2" style="font-size:11px">2. PLI performs ice point verification? *</label><select id="vq2"><option value="Yes">Yes</option><option value="No">No</option></select></div>
+      <div class="field"><label for="vq3" style="font-size:11px">3. Aware of calibration due date? *</label><select id="vq3"><option value="Yes">Yes</option><option value="No">No</option></select></div>
+      <div class="field"><label for="vq4" style="font-size:11px">4. Thermometer cleaned and sanitized? *</label><select id="vq4"><option value="Yes">Yes</option><option value="No">No</option></select></div>
+     </div>
+
+     <div id="devBlock" class="hidden" style="margin-top:10px">
+      <h4 style="color:#a42b21;font-size:12.5px;margin:8px 0 4px">Deviation Corrective Action</h4>
+      <div class="grid">
+       <div class="field"><label for="vAction">ACTION TAKEN *</label><input id="vAction" placeholder="e.g. Relocated to CS2, checked refrigerant"></div>
+       <div class="field"><label for="vResult">RESULT OF ACTION *</label><input id="vResult" placeholder="e.g. Temperature stabilized to -18.5°C"></div>
+       <div class="field wide"><label for="vDisp">PRODUCT DISPOSITION *</label><input id="vDisp" placeholder="e.g. Inspected, fit for distribution"></div>
+      </div>
+     </div>
+
+     <div style="margin-top:12px">
+       <label style="font-size:11px;font-weight:700;color:var(--navy)">QUALITY PERSONNEL SIGNATURE *</label>
+       <canvas id="vPad" class="sigpad" style="max-width:380px;height:110px" aria-label="Quality personnel signature"></canvas>
+     </div>
+     <div class="actions" style="margin-top:10px">
+       <button type="button" onclick="submitWeek()">Submit Review &amp; Signature</button>
+       <button type="button" class="secondary" onclick="clearPad($('vPad'))">Clear</button>
+       <button type="button" class="secondary" onclick="closeWeek()">Cancel</button>
+     </div>
+   </div>
+   <div id="weekCloseBtn" class="actions hidden" style="margin-top:10px">
+     <button type="button" class="secondary" onclick="reOpenReviewForm()">✏️ Edit Review / Re-sign</button>
+     <button type="button" class="secondary" onclick="closeWeek()">Close</button>
+   </div>
   </div>
  </section>
 
@@ -1927,7 +1966,9 @@ const fmtM=d=>new Date(d+"T00:00:00").toLocaleDateString(undefined,{month:"short
 const wkLabel=k=>{let b=new Date(k+"T00:00:00");b.setDate(b.getDate()+6);return fmtM(k)+" – "+fmtM(ymd(b))};
 const weekRecs=k=>data.filter(r=>wkStart(sd(r))===k);
 function weekStatus(k){
- let rs=weekRecs(k),pend=rs.filter(r=>r.verification==="Pending Verification").length,last=(weeklyVer[k]||[]).slice(-1)[0];
+ let rs=weekRecs(k);
+ let pend=rs.filter(r=>!r.verification || r.verification==="Pending Verification" || r.verification==="Pending Review").length;
+ let last=(weeklyVer[k]||[]).slice(-1)[0];
  let st=pend===rs.length?"Pending Review":pend>0?"Partially Reviewed":(last?last.decision:(rs.some(r=>r.verification==="Rejected")?"Rejected":"Reviewed"));
  return{rs,pend,last,st};
 }
@@ -1935,7 +1976,8 @@ function renderWeeks(){
  let keys=[...new Set(data.map(r=>wkStart(sd(r))))].sort().reverse();
  $("weekBody").innerHTML=keys.map(k=>{
   let w=weekStatus(k),dev=w.rs.filter(r=>r.assessment==="Deviation").length;
-  return `<tr><td><b>${esc(wkLabel(k))}</b></td><td>${w.rs.length}</td><td>${dev?`<b style="color:#a42b21">${dev}</b>`:0}</td><td>${w.pend}</td><td>${badge(w.st)}</td><td>${w.last?esc(w.last.verifier)+(w.last.sig?`<img src="${w.last.sig}" alt="signature" style="display:block;height:34px;max-width:120px;object-fit:contain">`:""):"—"}</td><td><button class="secondary" onclick="openWeek('${k}')">${w.pend?"Review &amp; Sign":"View"}</button></td></tr>`;
+  const revDisplay = w.last ? `<b>${esc(w.last.verifier)}</b><br><small style="color:#64748b">${w.last.date ? w.last.date.replace("T"," ") : ""}</small>${w.last.sig ? `<img src="${w.last.sig}" alt="Signature" style="display:block;height:34px;max-width:130px;object-fit:contain;background:#fff;border:1px solid #cbd5e1;border-radius:4px;margin-top:3px">` : ""}` : '<span style="color:#94a3b8">—</span>';
+   return `<tr><td><b>${esc(wkLabel(k))}</b></td><td>${w.rs.length}</td><td>${dev?`<b style="color:#a42b21">${dev}</b>`:0}</td><td>${badge(w.st)}</td><td>${revDisplay}</td><td><button class="secondary" onclick="openWeek('${k}')">${w.pend?"Review &amp; Sign":"View / Edit"}</button></td></tr>`;
  }).join("")||'<tr><td colspan="7">No monitoring records yet.</td></tr>';
 }
 function initPad(c){
@@ -1950,7 +1992,16 @@ function clearPad(c){
 function gotoSheet(d,sh){
  $("sheetDate").value=d;$("sheetShift").value=sh;showTab("records");window.scrollTo({top:0,behavior:"smooth"});
 }
-const verifierList=["Annabel Senita","Alicia Vigo","Jonalyn Pascual","Haniesa Nalog","Ronalyn Luza","Jerwin Mendoza","Joshua Francisco"],OTHER="Other (specify)";
+const verifierList = [
+  "Jerwin Mendoza",
+  "Ronalyn Luza",
+  "Joshua Francisco",
+  "Haniesa Nalog",
+  "Alicia Vigo",
+  "Jonalyn Pascual",
+  "Annabel Senita",
+  "Cleo Ann Francisco"
+], OTHER = "Other (specify)";
 function fillPick(sel,list){sel.innerHTML='<option value="">Select name</option>'+list.map(n=>`<option>${esc(n)}</option>`).join("")+`<option>${OTHER}</option>`}
 fillPick($("verifier"),verifierList);fillPick($("vq1"),verifierList);
 [["verifier","verifierOther"],["vq1","vq1Other"]].forEach(([a,b])=>$(a).addEventListener("change",()=>{const o=$(a).value===OTHER;$(b).classList.toggle("hidden",!o);if(o)$(b).focus();else $(b).value=""}));
@@ -1972,27 +2023,56 @@ function devHtml(d){
 function openWeek(k){
  selectedWeek=k;let w=weekStatus(k),dev=w.rs.filter(r=>r.assessment==="Deviation").length;
  $("weekTitle").textContent="Week of "+wkLabel(k);
- $("weekSummary").textContent=`${w.rs.length} monitoring entries • ${dev} deviation(s) • ${w.pend} pending review`;
- let combos={};w.rs.forEach(r=>{let key=sd(r)+"|"+r.shift;(combos[key]=combos[key]||[]).push(r)});
- let ord={"Day Shift":0,"Mid Shift":1,"Night Shift":2},keys=Object.keys(combos).sort((a,b)=>{let[da,sa]=a.split("|"),[db,sb]=b.split("|");return da<db?-1:da>db?1:(ord[sa]??9)-(ord[sb]??9)});
- $("weekSheets").innerHTML=keys.map(key=>{let[d,sh]=key.split("|"),rs=combos[key],dv=rs.filter(r=>r.assessment==="Deviation").length,sg=(sheetSigs[d+"|"+sh]||[]).map(g=>g.name);
- return `<tr><td>${esc(fmtD(d))}</td><td>${esc(sh)}</td><td>${rs.length}</td><td>${dv?`<b style="color:#a42b21">${dv}</b>`:0}</td><td>${sg.length?esc(sg.join(", ")):"<small>Not signed</small>"}</td><td><button class="secondary" onclick="gotoSheet('${d}','${esc(sh)}')">View Sheet</button></td></tr>`}).join("");
+ $("weekSummary").textContent=`${w.rs.length} entries • ${dev} deviation(s) • ${w.pend} pending review`;
+
+ // Deviations summary table
  let fl=w.rs.filter(r=>r.assessment==="Deviation"||r.remarks).sort((a,b)=>a.id-b.id);
- $("weekFlags").innerHTML=fl.map(r=>`<tr><td>${esc(r.date)}<br>${esc(r.time)}</td><td>${esc(r.area)}</td><td><b>${typeof r.temp==='number'?r.temp.toFixed(1)+'°C':r.temp}</b><br>${badge(r.assessment)}</td><td>${esc(r.standard)}</td><td>${esc(r.monitor)}<br>${esc(r.shift)}</td><td>${esc(r.remarks||"—")}</td></tr>`).join("")||'<tr><td colspan="6">No deviations or remarks this week.</td></tr>';
- let done=(weeklyVer[k]||[]);$("weekDone").innerHTML=done.map(v=>`<div class="notice ${v.decision==="Verified"?"good":"alert"}" style="margin-top:12px"><b>${esc(v.decision)}</b> by <b>${esc(v.verifier)}</b> • ${esc(v.date.replace("T"," "))} • ${v.count} record(s)<br>${esc(v.remarks)}${checksHtml(v.checks)}${devHtml(v.dev)}${v.sig?`<img src="${v.sig}" alt="signature" style="display:block;width:220px;height:80px;object-fit:contain;border-bottom:1px solid #333;margin-top:8px">`:""}</div>`).join("");
+ const flagsBlock = $("weekFlagsBlock");
+ if(flagsBlock){
+   flagsBlock.classList.toggle("hidden", !fl.length);
+   $("weekFlags").innerHTML=fl.map(r=>`<tr><td>${esc(r.date)} ${esc(r.time)}</td><td><b>${esc(r.area)}</b></td><td>${typeof r.temp==='number'?r.temp.toFixed(1)+'°C':r.temp} (${badge(r.assessment)})</td><td>${esc(r.standard)}</td><td>${esc(r.monitor)} (${esc(r.shift)})</td><td>${esc(r.remarks||"—")}</td></tr>`).join("");
+ }
+
+ // Show previous review and signature if already reviewed
+ let done=(weeklyVer[k]||[]);
+ $("weekDone").innerHTML=done.map(v=>`<div style="background:#fff;border:1.5px solid #22c55e;border-radius:8px;padding:12px;margin:8px 0;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+     <div>
+       <span style="background:#16a34a;color:#fff;font-weight:700;font-size:11px;padding:2px 8px;border-radius:4px">${esc(v.decision)}</span>
+       <b style="color:var(--navy);margin-left:6px">${esc(v.verifier)}</b>
+       <small style="color:#64748b"> • ${esc(v.date.replace("T"," "))}</small>
+     </div>
+     <small style="color:#64748b">${v.count} record(s) reviewed</small>
+   </div>
+   <div style="margin-top:6px;font-size:12.5px;color:#334155"><b>Remarks:</b> ${esc(v.remarks||"—")}</div>
+   ${checksHtml(v.checks)}
+   ${devHtml(v.dev)}
+   ${v.sig ? `<div style="margin-top:8px"><small style="display:block;color:#64748b;font-weight:700">REVIEWER SIGNATURE:</small><img src="${v.sig}" alt="Reviewer Signature" style="display:block;height:65px;max-width:200px;object-fit:contain;background:#fff;border:1px solid #e2e8f0;border-radius:6px;margin-top:4px"></div>` : ""}
+ </div>`).join("");
  $("weekDone").classList.toggle("hidden",!done.length);
- $("weekForm").classList.toggle("hidden",!w.pend);$("weekCloseBtn").classList.toggle("hidden",!!w.pend);
- if(w.pend){
+
+ const isDone = Boolean(done.length && !w.pend);
+ $("weekForm").classList.toggle("hidden", isDone);
+ $("weekCloseBtn").classList.toggle("hidden", !isDone);
+
+ if(!isDone){
   resetVerifyForm();
   $("devBlock").classList.toggle("hidden",!dev);
   let n=new Date();n.setMinutes(n.getMinutes()-n.getTimezoneOffset());
   $("verifyDate").value=n.toISOString().slice(0,16);
-  $("decision").value="Verified";
+  $("decision").value="Reviewed";
   $("verifyRemarks").value="";
  }
  $("weekEditor").classList.remove("hidden");
- if(w.pend){initPad($("vPad"));clearPad($("vPad"))}
+ if(!isDone){initPad($("vPad"));clearPad($("vPad"))}
  $("weekEditor").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function reOpenReviewForm(){
+ $("weekForm").classList.remove("hidden");
+ $("weekCloseBtn").classList.add("hidden");
+ initPad($("vPad"));
+ clearPad($("vPad"));
 }
 function closeWeek(){$("weekEditor").classList.add("hidden");selectedWeek=null}
 function submitWeek(){
@@ -2002,7 +2082,7 @@ function submitWeek(){
  let hasDev=w.rs.some(r=>r.assessment==="Deviation");
  if(hasDev&&(!$("vAction").value.trim()||!$("vResult").value.trim()||!$("vDisp").value.trim())){alert("This week has deviation(s). Please complete Action Taken, Result of Action Taken, and Product Disposition (type N/A if none).");return}
  if($("vPad").dataset.has!=="1"){alert("Please sign in the signature box.");return}
- let pend=w.rs.filter(r=>r.verification==="Pending Verification"||r.verification==="Pending Review"),dec=$("decision").value,name=vName(),dt=$("verifyDate").value,rm=$("verifyRemarks").value.trim();
+ let pend=w.rs.filter(r=>!r.verification || r.verification==="Pending Verification" || r.verification==="Pending Review" || r.verification==="Reviewed" || r.verification==="Verified"),dec=$("decision").value,name=vName(),dt=$("verifyDate").value,rm=$("verifyRemarks").value.trim();
  pend.forEach(r=>{r.verification=dec;r.verifier=name;r.verifyDate=dt;r.decisionRemarks=rm});
  (weeklyVer[k]=weeklyVer[k]||[]).push({verifier:name,date:dt,decision:dec,remarks:rm,sig:$("vPad").toDataURL(),count:pend.length,checks:{q1:vPli(),q2:$("vq2").value,q3:$("vq3").value,q4:$("vq4").value},dev:hasDev?{action:$("vAction").value.trim(),result:$("vResult").value.trim(),disp:$("vDisp").value.trim()}:null});
  localStorage.setItem("hourlyTempWeeklyVerifications",JSON.stringify(weeklyVer));
