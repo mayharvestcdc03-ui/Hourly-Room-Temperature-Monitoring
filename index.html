@@ -223,6 +223,179 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
 .counter-sign-display img{display:block;width:88px;height:30px;object-fit:contain;background:#fff;border:1px solid #d8dee6;border-radius:4px;margin-top:3px}
 .counter-sign-display small{display:block;color:var(--muted);font-size:10px}
 
+
+/* ===== Real-Time Temperature Extremes Dashboard ===== */
+.hl-summary-container {
+  margin: 16px 0 20px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(18,50,74,0.04);
+}
+.hl-title-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+.hl-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.hl-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hl-head {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 6px;
+}
+.hl-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+.hl-stat.high {
+  background: #fff5f5;
+  border-left: 3px solid #e53e3e;
+}
+.hl-stat.low {
+  background: #f0f9ff;
+  border-left: 3px solid #0284c7;
+}
+.hl-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.hl-stat.high .hl-label { color: #c53030; }
+.hl-stat.low .hl-label { color: #0369a1; }
+.hl-val {
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+}
+.hl-meta {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media(max-width:850px){
+  .hl-grid { grid-template-columns: 1fr; }
+}
+
+/* ===== SOP Thermometer Sanitation Card ===== */
+.sop-card {
+  background: #fffdf5;
+  border: 1.5px solid #f6ad55;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 12px 0 18px;
+  box-shadow: 0 2px 6px rgba(221,107,32,0.06);
+}
+.sop-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #ecc94b;
+}
+.sop-badge {
+  background: #dd6b20;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+.sop-title {
+  font-weight: 800;
+  color: #744210;
+  font-size: 13px;
+}
+.sop-steps-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 10px;
+}
+.sop-step-box {
+  background: #fff;
+  border: 1px solid #fed7d7;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+.sop-step-box.step-q {
+  border-color: #cbd5e1;
+  background: #ffffff;
+}
+.sop-step-box.step-yes-box {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+.sop-step-box.step-no-box {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+.step-num {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #64748b;
+}
+.step-text {
+  color: #1e293b;
+  line-height: 1.35;
+}
+.step-options {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+.sop-radio {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 12px;
+}
+.tag-yes { color: #15803d; }
+.tag-no { color: #b91c1c; }
+@media(max-width:800px){
+  .sop-steps-grid { grid-template-columns: 1fr; }
+}
+
 /* ===== Room list entry (Updated with per-room ITME Code, Calib, N/A, and Save) ===== */
 .clockbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 14px;color:var(--muted);font-size:12px}
 .clockbar b{font-variant-numeric:tabular-nums;color:var(--navy);font-size:14px}
@@ -323,6 +496,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
 .rl-mon small{display:block}
 .rl-stat small{display:block;margin-top:3px}
 </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -346,7 +520,8 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
    <button class="secondary" onclick="showTab('entry')">New Monitoring Entry</button>
    <button class="secondary" onclick="showTab('records')">Monitoring Records</button>
    <button class="secondary" onclick="showTab('counter')">Counter Check</button>
-   <button class="secondary" onclick="showTab('verify')">Verification</button>
+   <button class="secondary" onclick="showTab('verify')">Review</button>
+   <button class="secondary" onclick="downloadSheetPDF()">📄 Download PDF</button>
    <button class="secondary" onclick="exportCSV()">Export CSV</button>
    <button class="danger" onclick="resetAllRecords()">Reset All Records</button>
  </div>
@@ -356,7 +531,61 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
    <div class="metric"><b id="totalCount">0</b><span>Total monitoring entries</span></div>
    <div class="metric"><b id="compliantCount">0</b><span>Within standard / N/A</span></div>
    <div class="metric"><b id="deviationCount">0</b><span>Temperature deviations</span></div>
-   <div class="metric"><b id="pendingCount">0</b><span>Awaiting verification</span></div>
+   <div class="metric"><b id="pendingCount">0</b><span>Awaiting Review</span></div>
+  </div>
+ 
+  <!-- TEMPERATURE EXTREMES (HIGHEST & LOWEST READINGS) -->
+  <div class="hl-summary-container">
+    <div class="hl-title-bar">
+      <span>🌡️ TEMPERATURE EXTREMES (HIGHEST &amp; LOWEST READINGS)</span>
+      <small style="color:var(--muted);font-weight:normal">Real-time daily, weekly, and monthly tracking (excluding N/A readings)</small>
+    </div>
+    <div class="hl-grid">
+      <!-- Daily Card -->
+      <div class="hl-card">
+        <div class="hl-head">📅 TODAY'S READINGS</div>
+        <div class="hl-stat high">
+          <div class="hl-label">🔺 Highest</div>
+          <div class="hl-val" id="dayHigh">--</div>
+          <div class="hl-meta" id="dayHighMeta">No numeric readings today</div>
+        </div>
+        <div class="hl-stat low">
+          <div class="hl-label">🔻 Lowest</div>
+          <div class="hl-val" id="dayLow">--</div>
+          <div class="hl-meta" id="dayLowMeta">No numeric readings today</div>
+        </div>
+      </div>
+
+      <!-- Weekly Card -->
+      <div class="hl-card">
+        <div class="hl-head">📊 THIS WEEK (MON – SUN)</div>
+        <div class="hl-stat high">
+          <div class="hl-label">🔺 Highest</div>
+          <div class="hl-val" id="weekHigh">--</div>
+          <div class="hl-meta" id="weekHighMeta">No numeric readings this week</div>
+        </div>
+        <div class="hl-stat low">
+          <div class="hl-label">🔻 Lowest</div>
+          <div class="hl-val" id="weekLow">--</div>
+          <div class="hl-meta" id="weekLowMeta">No numeric readings this week</div>
+        </div>
+      </div>
+
+      <!-- Monthly Card -->
+      <div class="hl-card">
+        <div class="hl-head">🗓️ THIS MONTH</div>
+        <div class="hl-stat high">
+          <div class="hl-label">🔺 Highest</div>
+          <div class="hl-val" id="monthHigh">--</div>
+          <div class="hl-meta" id="monthHighMeta">No numeric readings this month</div>
+        </div>
+        <div class="hl-stat low">
+          <div class="hl-label">🔻 Lowest</div>
+          <div class="hl-val" id="monthLow">--</div>
+          <div class="hl-meta" id="monthLowMeta">No numeric readings this month</div>
+        </div>
+      </div>
+    </div>
   </div>
  </section>
 
@@ -366,15 +595,42 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
     <b>Instructions:</b> Select Monitor &amp; Shift below. Each room has its own <b>ITME Code</b> and <b>Calibration Date</b> (remembered automatically per room). Click <b>N/A</b> if the room is not in operation or if no ITME code is used. You can save each room individually using the <b>💾 Save</b> button on that row, or use the button at the bottom to save all filled rooms. Records are synced across all devices live.
   </div>
   <form id="entryForm">
+
+   <!-- THERMOMETER PRE-OPERATIONAL SANITATION PROTOCOL -->
+   <div class="sop-card">
+     <div class="sop-head">
+       <span class="sop-badge">MHC STANDARD OPERATING PROCEDURE</span>
+       <span class="sop-title">🧼 THERMOMETER PRE-OPERATIONAL SANITATION PROTOCOL</span>
+     </div>
+     <div class="sop-steps-grid">
+       <div class="sop-step-box step-q">
+         <div class="step-num">Step 1 • Pre-Check</div>
+         <div class="step-text"><b>1. Is the thermometer Clean and Sanitize prior to use?</b></div>
+         <div class="step-options">
+           <label class="sop-radio"><input type="radio" name="sopSanitize" value="YES" checked onchange="onSopChange(this.value)"> <span class="tag-yes">YES</span></label>
+           <label class="sop-radio"><input type="radio" name="sopSanitize" value="NO" onchange="onSopChange(this.value)"> <span class="tag-no">NO</span></label>
+         </div>
+       </div>
+       <div class="sop-step-box step-yes-box" id="sopYesBox">
+         <div class="step-num">Step 2 • Action if YES</div>
+         <div class="step-text">✅ <b>If YES:</b> Proceed checking Internal Product Temperature and Room Temperature.</div>
+       </div>
+       <div class="sop-step-box step-no-box" id="sopNoBox" style="display:none">
+         <div class="step-num">Step 3 • Action if NO</div>
+         <div class="step-text">🛑 <b>If NO:</b> Clean and Sanitize the thermometer probe first before use!</div>
+       </div>
+     </div>
+   </div>
+
    <div class="grid">
     <div class="field"><label for="monitor">PERSON WHO MONITORS *</label><select id="monitor" required><option value="">Select personnel</option></select></div>
     <div class="field"><label for="shift">SHIFT *</label><select id="shift" required><option value="">Select shift</option><option value="Day Shift">Day Shift (5:00 AM &ndash; 2:00 PM)</option><option value="Mid Shift">Mid Shift (1:00 PM &ndash; 10:00 PM)</option><option value="Night Shift">Night Shift (9:00 PM &ndash; 6:00 AM)</option></select></div>
-    <div class="field"><label for="quickThermo">QUICK-FILL ITME CODE (OPTIONAL)</label><input id="quickThermo" placeholder="Type here to bulk-fill below"></div>
+    <div class="field"><label for="quickThermo">ITME CODE (APPLY TO ALL)</label><input id="quickThermo" placeholder="Type here to apply to all rooms below"></div>
     <div class="field">
-      <label for="quickCalib">QUICK-FILL CALIB DATE</label>
+      <label for="quickCalib">CALIBRATION DATE (APPLY TO ALL)</label>
       <div style="display:flex;gap:6px">
         <input type="date" id="quickCalib">
-        <button type="button" class="secondary" onclick="applyQuickFill()" title="Apply to all unfilled rooms" style="padding:0 12px;font-size:12px;white-space:nowrap">Apply All</button>
+        <button type="button" class="secondary" onclick="applyQuickFill()" title="Apply Calibration Date to all unfilled rooms" style="padding:0 12px;font-size:12px;white-space:nowrap">Apply All</button>
       </div>
     </div>
    </div>
@@ -386,7 +642,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
       <div>ROOM / AREA</div>
       <div>STANDARD</div>
       <div>ITME CODE</div>
-      <div>CALIB DATE</div>
+      <div>CALIBRATION DATE</div>
       <div>ACTUAL TEMPERATURE</div>
       <div>TIME</div>
       <div>STATUS</div>
@@ -409,6 +665,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
      <div class="field"><label for="sheetDate">MONITORING DATE</label><input type="date" id="sheetDate"></div>
      <div class="field"><label for="sheetShift">SHIFT</label><select id="sheetShift"><option value="Day Shift">Day Shift (5:00 AM – 2:00 PM)</option><option value="Mid Shift">Mid Shift (1:00 PM – 10:00 PM)</option><option value="Night Shift">Night Shift (9:00 PM – 6:00 AM)</option></select></div>
      <button class="secondary" onclick="printSheet()">Print Sheet</button>
+     <button class="secondary" onclick="downloadSheetPDF()">📄 Download PDF</button>
      <span class="legend"><b></b>Out of standard • <b class="legend-na"></b>N/A (No Operation) • Tap a reading to view its details</span>
    </div>
    <div class="tablewrap"><table id="sheetTable" class="sheet"></table></div>
@@ -425,10 +682,10 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
   <div class="filters">
    <div class="field"><label>FILTER BY DATE</label><input type="date" id="filterDate"></div>
    <div class="field"><label>FILTER BY AREA</label><select id="filterArea"><option value="">All areas</option></select></div>
-   <div class="field"><label>FILTER BY STATUS</label><select id="filterStatus"><option value="">All statuses</option><option>Compliant</option><option>Deviation</option><option>N/A (No Operation)</option><option>Pending Verification</option><option>Verified</option><option>Rejected</option></select></div>
+   <div class="field"><label>FILTER BY STATUS</label><select id="filterStatus"><option value="">All statuses</option><option>Compliant</option><option>Deviation</option><option>N/A (No Operation)</option><option>Pending Review</option><option>Reviewed</option><option>Rejected</option></select></div>
    <div class="field"><label>SEARCH PERSON / ITME CODE</label><input id="searchText" placeholder="Search..."></div>
   </div>
-  <div class="tablewrap"><table><thead><tr><th>Date / Time</th><th>Area</th><th>Actual °C</th><th>Standard</th><th>PLI Monitor / OIC-PLI Counter Check</th><th>ITME Code / Calibration</th><th>Assessment</th><th>Verification</th><th>Action</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
+  <div class="tablewrap"><table><thead><tr><th>Date / Time</th><th>Area</th><th>Actual °C</th><th>Standard</th><th>PLI Monitor / OIC-PLI Counter Check</th><th>ITME Code / Calibration Date</th><th>Assessment</th><th>Review Status</th><th>Action</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
  </section>
 
  <section id="counter" class="panel hidden">
@@ -453,7 +710,8 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
   </form>
   <h3 style="margin-top:26px">Counter Checking Checklist</h3>
   <div id="counterSheetBlock">
-   <div class="sheetbar"><div class="field"><label for="cSheetDate">COUNTER CHECK DATE</label><input type="date" id="cSheetDate"></div><button class="secondary" onclick="printSheet('psc')">Print Sheet</button><span class="legend"><b></b>Out of standard or discrepancy • Tap a room name to counter check it • Tap a reading to view its details</span></div>
+   <div class="sheetbar"><div class="field"><label for="cSheetDate">COUNTER CHECK DATE</label><input type="date" id="cSheetDate"></div><button class="secondary" onclick="printSheet('psc')">Print Sheet</button>
+     <button class="secondary" onclick="downloadCounterPDF()">📄 Download PDF</button><span class="legend"><b></b>Out of standard or discrepancy • Tap a room name to counter check it • Tap a reading to view its details</span></div>
    <div class="tablewrap"><table id="counterSheet" class="sheet"></table></div>
    <div id="counterSigs" class="sigrow"></div>
    <div class="signctl">
@@ -467,9 +725,9 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
  </section>
 
  <section id="verify" class="panel hidden">
-  <h2>4. Weekly Quality Verification</h2>
-  <div class="notice">Quality personnel verify the monitoring records of <b>one whole week (Monday to Sunday)</b> in a single review. Compare the readings with the standards, check the deviations and remarks, then sign. Every pending record in the selected week is marked with your decision. Night shift records follow the advance date of the sheet.</div>
-  <div class="tablewrap"><table style="min-width:860px"><thead><tr><th>Week</th><th>Entries</th><th>Deviations</th><th>Pending</th><th>Status</th><th>Verified By</th><th>Action</th></tr></thead><tbody id="weekBody"></tbody></table></div>
+  <h2>4. Weekly Quality Review</h2>
+  <div class="notice">Quality personnel review the monitoring records of <b>one whole week (Monday to Sunday)</b> in a single review. Compare the readings with the standards, check the deviations and remarks, then sign. Every pending record in the selected week is marked with your decision. Night shift records follow the advance date of the sheet.</div>
+  <div class="tablewrap"><table style="min-width:860px"><thead><tr><th>Week</th><th>Entries</th><th>Deviations</th><th>Pending</th><th>Status</th><th>Reviewed By</th><th>Action</th></tr></thead><tbody id="weekBody"></tbody></table></div>
   <div id="weekEditor" class="panel hidden" style="margin-top:16px;background:#f8fafb">
    <h3 id="weekTitle"></h3>
    <div id="weekSummary" class="notice"></div>
@@ -479,13 +737,13 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
    <div class="tablewrap"><table style="min-width:760px"><thead><tr><th>Date / Time</th><th>Area</th><th>Reading</th><th>Standard</th><th>Monitor / Shift</th><th>Remarks / Action</th></tr></thead><tbody id="weekFlags"></tbody></table></div>
    <div id="weekDone" class="hidden"></div>
    <div id="weekForm">
-    <h3 style="margin-top:18px">Verify this Week</h3>
+    <h3 style="margin-top:18px">Review this Week</h3>
     <div class="grid">
-     <div class="field"><label for="verifier">VERIFIED BY (QUALITY PERSONNEL) *</label><select id="verifier"></select><input id="verifierOther" class="hidden" placeholder="Specify complete name"></div>
-     <div class="field"><label for="verifyDate">DATE / TIME VERIFIED *</label><input id="verifyDate" type="datetime-local"></div>
-     <div class="field wide"><label for="verifyRemarks">VERIFICATION REMARKS *</label><textarea id="verifyRemarks" rows="2" placeholder="Record review findings, required follow-up, or reason for rejection"></textarea></div>
+     <div class="field"><label for="verifier">REVIEWED BY (QUALITY PERSONNEL) *</label><select id="verifier"></select><input id="verifierOther" class="hidden" placeholder="Specify complete name"></div>
+     <div class="field"><label for="verifyDate">DATE / TIME REVIEWED *</label><input id="verifyDate" type="datetime-local"></div>
+     <div class="field wide"><label for="verifyRemarks">REVIEW REMARKS *</label><textarea id="verifyRemarks" rows="2" placeholder="Record review findings, required follow-up, or reason for rejection"></textarea></div>
     </div>
-    <h3 style="margin-top:18px">Verification Questions</h3>
+    <h3 style="margin-top:18px">Review Questions</h3>
     <div class="grid">
      <div class="field wide"><label for="vq1">1. Who is the PLI in charge of monitoring the blast freezing activity? *</label><select id="vq1"></select><input id="vq1Other" class="hidden" placeholder="Specify complete name"></div>
      <div class="field wide"><label for="vq2">2. Does the PLI perform ice point verification prior to use? *</label><select id="vq2"><option value="">Select answer</option><option>Yes</option><option>No</option></select></div>
@@ -502,9 +760,9 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
      </div>
     </div>
     <h3 style="margin-top:18px">Quality Personnel Signature</h3>
-    <div class="grid"><div class="field"><label for="decision">VERIFICATION DECISION *</label><select id="decision"><option value="Verified">Verified (Approve week)</option><option value="Rejected">Rejected (Return with remarks)</option></select></div></div>
+    <div class="grid"><div class="field"><label for="decision">REVIEW DECISION *</label><select id="decision"><option value="Reviewed">Reviewed (Approve week)</option><option value="Rejected">Rejected (Return with remarks)</option></select></div></div>
     <canvas id="vPad" class="sigpad" aria-label="Quality personnel signature"></canvas>
-    <div class="actions"><button type="button" onclick="submitWeek()">Submit Verification</button><button type="button" class="secondary" onclick="clearPad($('vPad'))">Clear Signature</button><button type="button" class="secondary" onclick="closeWeek()">Cancel</button></div>
+    <div class="actions"><button type="button" onclick="submitWeek()">Submit Review</button><button type="button" class="secondary" onclick="clearPad($('vPad'))">Clear Signature</button><button type="button" class="secondary" onclick="closeWeek()">Cancel</button></div>
    </div>
    <div id="weekCloseBtn" class="actions hidden" style="margin-top:14px"><button type="button" class="secondary" onclick="closeWeek()">Close Review</button></div>
   </div>
@@ -1059,7 +1317,7 @@ function applyQuickFill(){
   const qTh=$("quickThermo").value.trim();
   const qCal=$("quickCalib").value;
   if(!qTh && !qCal){
-    alert("Please enter an ITME code or select a calibration date in Quick-Fill first.");
+    alert("Please enter an ITME code or select a calibration date in the top fields first.");
     return;
   }
   let count=0;
@@ -1076,7 +1334,7 @@ function applyQuickFill(){
       count++;
     }
   });
-  toast(`Applied quick-fill to ${count} room(s)`);
+  toast(`Applied ITME Code and Calibration Date to ${count} room(s)`);
 }
 
 // Single Room Save Action
@@ -1095,6 +1353,12 @@ function saveSingleRoom(i){
   if(!sh){
     alert("Please select SHIFT at the top of the form.");
     $("shift").focus();
+    return;
+  }
+
+  const sopRadio = document.querySelector('input[name="sopSanitize"]:checked');
+  if(sopRadio && sopRadio.value === "NO"){
+    alert("⚠️ SANITATION PROTOCOL: The thermometer is NOT cleaned & sanitized. Please Clean and Sanitize the probe first before use!");
     return;
   }
 
@@ -1141,7 +1405,7 @@ function saveSingleRoom(i){
     thermo:th,
     calibration:cal,
     remarks:s.isNA?"N/A - Not in operation":(s.ok?"":$("rlri"+i).value.trim()),
-    verification:"Pending Verification",
+    verification:"Pending Review",
     verifier:"",
     verifyDate:"",
     decisionRemarks:""
@@ -1168,6 +1432,11 @@ $("entryForm").addEventListener("submit",e=>{
  const mon=$("monitor").value, sh=$("shift").value;
  if(!mon){alert("Please select PERSON WHO MONITORS.");$("monitor").focus();return}
  if(!sh){alert("Please select SHIFT.");$("shift").focus();return}
+ const sopRadio = document.querySelector('input[name="sopSanitize"]:checked');
+ if(sopRadio && sopRadio.value === "NO"){
+  alert("⚠️ SANITATION PROTOCOL: The thermometer is NOT cleaned & sanitized. Please Clean and Sanitize the probe first before use!");
+  return;
+ }
 
  for(const i of filled){
   const s=rl.state[i];
@@ -1213,7 +1482,7 @@ $("entryForm").addEventListener("submit",e=>{
    thermo:th,
    calibration:cal,
    remarks:s.isNA?"N/A - Not in operation":(s.ok?"":$("rlri"+i).value.trim()),
-   verification:"Pending Verification",
+   verification:"Pending Review",
    verifier:"",
    verifyDate:"",
    decisionRemarks:""
@@ -1237,14 +1506,19 @@ function showTab(tab){
  else if(tab==="verify"){renderWeeks()}
 }
 function badge(st){
- const map={"Compliant":"ok","Verified":"ok","Deviation":"bad","Rejected":"bad","Pending Verification":"pending","Partially Verified":"pending","N/A (No Operation)":"neutral"};
- return `<span class="status ${map[st]||"neutral"}">${esc(st)}</span>`;
+ let displaySt = st;
+ if(st === "Verified") displaySt = "Reviewed";
+ else if(st === "Pending Verification") displaySt = "Pending Review";
+ else if(st === "Partially Verified") displaySt = "Partially Reviewed";
+ const map={"Compliant":"ok","Reviewed":"ok","Verified":"ok","Deviation":"bad","Rejected":"bad","Pending Review":"pending","Pending Verification":"pending","Partially Reviewed":"pending","Partially Verified":"pending","N/A (No Operation)":"neutral"};
+ return `<span class="status ${map[displaySt]||"neutral"}">${esc(displaySt)}</span>`;
 }
 function render(){
  $("totalCount").textContent=data.length;
  $("compliantCount").textContent=data.filter(r=>r.assessment==="Compliant"||String(r.assessment).includes("N/A")).length;
  $("deviationCount").textContent=data.filter(r=>r.assessment==="Deviation").length;
- $("pendingCount").textContent=data.filter(r=>r.verification==="Pending Verification").length;
+ $("pendingCount").textContent=data.filter(r=>r.verification==="Pending Verification"||r.verification==="Pending Review").length;
+ updateTemperatureExtremes();
 
  let fDate=$("filterDate").value, fArea=$("filterArea").value, fStat=$("filterStatus").value, q=$("searchText").value.trim().toLowerCase();
  let rows=data.filter(r=>{
@@ -1252,7 +1526,11 @@ function render(){
   if(fArea&&r.area!==fArea)return false;
   if(fStat){
     if(fStat.includes("N/A")&&!String(r.assessment).includes("N/A"))return false;
-    else if(!fStat.includes("N/A")&&r.assessment!==fStat&&r.verification!==fStat)return false;
+    else if(!fStat.includes("N/A")){
+      if(fStat === "Reviewed" && (r.verification === "Reviewed" || r.verification === "Verified")) { /* match */ }
+      else if(fStat === "Pending Review" && (r.verification === "Pending Review" || r.verification === "Pending Verification")) { /* match */ }
+      else if(r.assessment!==fStat && r.verification!==fStat) return false;
+    }
   }
   if(q&&!(r.monitor.toLowerCase().includes(q)||String(r.thermo||"").toLowerCase().includes(q)||r.area.toLowerCase().includes(q)))return false;
   return true;
@@ -1266,7 +1544,7 @@ function render(){
    ccDisplay=`<div class="counter-sign-display"><b>${esc(cc.checker)}</b><small>(${esc(cc.time.slice(0,5))} \u2022 ${cc.temp==="N/A"?"N/A":cc.temp+"\u00B0C"} \u2022 ${esc(cc.result)})</small>${sigUrl?`<img src="${sigUrl}" alt="signature">`:"<small>Not signed</small>"}</div>`;
   }
   const tempDisplay=r.temp==="N/A"?"<b style='color:#64748b'>N/A</b>":`<b>${typeof r.temp==="number"?r.temp.toFixed(1):r.temp}°C</b>`;
-  return `<tr><td><b>${esc(r.date)}</b><br><small>${esc(r.time)}</small></td><td><b>${esc(r.area)}</b></td><td>${tempDisplay}</td><td>${esc(r.standard)}</td><td><div class="monitor-counter-wrap"><div class="monitor-info"><b>${esc(r.monitor)}</b><small>${esc(r.shift)}</small></div>${ccDisplay}</div></td><td>${esc(r.thermo)}<br><small>Cal: ${esc(r.calibration)}</small></td><td>${badge(r.assessment)}</td><td>${badge(r.verification)}</td><td><button class="secondary" onclick="viewRecord(${r.id})">View</button></td></tr>`;
+  return `<tr><td><b>${esc(r.date)}</b><br><small>${esc(r.time)}</small></td><td><b>${esc(r.area)}</b></td><td>${tempDisplay}</td><td>${esc(r.standard)}</td><td><div class="monitor-counter-wrap"><div class="monitor-info"><b>${esc(r.monitor)}</b><small>${esc(r.shift)}</small></div>${ccDisplay}</div></td><td>${esc(r.thermo)}<br><small>Calibration Date: ${esc(r.calibration)}</small></td><td>${badge(r.assessment)}</td><td>${badge(r.verification)}</td><td><button class="secondary" onclick="viewRecord(${r.id})">View</button></td></tr>`;
  }).join("")||'<tr><td colspan="9">No records found.</td></tr>';
  renderCounter();
  renderSheet();
@@ -1276,7 +1554,7 @@ function render(){
 function viewRecord(id){
  let r=data.find(x=>x.id===id),cc=cdata.filter(x=>String(x.linkedId)===String(r.id)).sort((a,b)=>b.id-a.id)[0];
  const tVal=r.temp==="N/A"?"N/A (No Operation)":r.temp+"°C";
- alert(`Record #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nTemperature: ${tVal} (${r.assessment})\nMonitor / PLI: ${r.monitor} / ${r.shift}\nOIC/PLI Counter Checked By: ${cc?cc.checker:"Pending"}\nCounter Check Signature: ${cc&&ocSig(cc)?"Signed":"Not yet signed"}\nITME Code: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}\nVerification: ${r.verification}\nVerified by: ${r.verifier||"—"}\nVerified at: ${r.verifyDate||"—"}\nVerification remarks: ${r.decisionRemarks||"—"}`);
+ alert(`Record #${id}\n${r.date} ${r.time}\nArea: ${r.area}\nTemperature: ${tVal} (${r.assessment})\nMonitor / PLI: ${r.monitor} / ${r.shift}\nOIC/PLI Counter Checked By: ${cc?cc.checker:"Pending"}\nCounter Check Signature: ${cc&&ocSig(cc)?"Signed":"Not yet signed"}\nITME Code: ${r.thermo}\nCalibration date: ${r.calibration}\nRemarks: ${r.remarks||"—"}\nReview Status: ${r.verification==="Verified"?"Reviewed":r.verification==="Pending Verification"?"Pending Review":r.verification}\nReviewed by: ${r.verifier||"—"}\nReviewed at: ${r.verifyDate||"—"}\nReview remarks: ${r.decisionRemarks||"—"}`);
 }
 
 function exportCSV(){
@@ -1615,14 +1893,14 @@ const wkLabel=k=>{let b=new Date(k+"T00:00:00");b.setDate(b.getDate()+6);return 
 const weekRecs=k=>data.filter(r=>wkStart(sd(r))===k);
 function weekStatus(k){
  let rs=weekRecs(k),pend=rs.filter(r=>r.verification==="Pending Verification").length,last=(weeklyVer[k]||[]).slice(-1)[0];
- let st=pend===rs.length?"Pending Verification":pend>0?"Partially Verified":(last?last.decision:(rs.some(r=>r.verification==="Rejected")?"Rejected":"Verified"));
+ let st=pend===rs.length?"Pending Review":pend>0?"Partially Reviewed":(last?last.decision:(rs.some(r=>r.verification==="Rejected")?"Rejected":"Reviewed"));
  return{rs,pend,last,st};
 }
 function renderWeeks(){
  let keys=[...new Set(data.map(r=>wkStart(sd(r))))].sort().reverse();
  $("weekBody").innerHTML=keys.map(k=>{
   let w=weekStatus(k),dev=w.rs.filter(r=>r.assessment==="Deviation").length;
-  return `<tr><td><b>${esc(wkLabel(k))}</b></td><td>${w.rs.length}</td><td>${dev?`<b style="color:#a42b21">${dev}</b>`:0}</td><td>${w.pend}</td><td>${badge(w.st)}</td><td>${w.last?esc(w.last.verifier)+(w.last.sig?`<img src="${w.last.sig}" alt="signature" style="display:block;height:34px;max-width:120px;object-fit:contain">`:""):"—"}</td><td><button class="secondary" onclick="openWeek('${k}')">${w.pend?"Review &amp; Verify":"View"}</button></td></tr>`;
+  return `<tr><td><b>${esc(wkLabel(k))}</b></td><td>${w.rs.length}</td><td>${dev?`<b style="color:#a42b21">${dev}</b>`:0}</td><td>${w.pend}</td><td>${badge(w.st)}</td><td>${w.last?esc(w.last.verifier)+(w.last.sig?`<img src="${w.last.sig}" alt="signature" style="display:block;height:34px;max-width:120px;object-fit:contain">`:""):"—"}</td><td><button class="secondary" onclick="openWeek('${k}')">${w.pend?"Review &amp; Sign":"View"}</button></td></tr>`;
  }).join("")||'<tr><td colspan="7">No monitoring records yet.</td></tr>';
 }
 function initPad(c){
@@ -1659,7 +1937,7 @@ function devHtml(d){
 function openWeek(k){
  selectedWeek=k;let w=weekStatus(k),dev=w.rs.filter(r=>r.assessment==="Deviation").length;
  $("weekTitle").textContent="Week of "+wkLabel(k);
- $("weekSummary").textContent=`${w.rs.length} monitoring entries • ${dev} deviation(s) • ${w.pend} pending verification`;
+ $("weekSummary").textContent=`${w.rs.length} monitoring entries • ${dev} deviation(s) • ${w.pend} pending review`;
  let combos={};w.rs.forEach(r=>{let key=sd(r)+"|"+r.shift;(combos[key]=combos[key]||[]).push(r)});
  let ord={"Day Shift":0,"Mid Shift":1,"Night Shift":2},keys=Object.keys(combos).sort((a,b)=>{let[da,sa]=a.split("|"),[db,sb]=b.split("|");return da<db?-1:da>db?1:(ord[sa]??9)-(ord[sb]??9)});
  $("weekSheets").innerHTML=keys.map(key=>{let[d,sh]=key.split("|"),rs=combos[key],dv=rs.filter(r=>r.assessment==="Deviation").length,sg=(sheetSigs[d+"|"+sh]||[]).map(g=>g.name);
@@ -1684,19 +1962,19 @@ function openWeek(k){
 function closeWeek(){$("weekEditor").classList.add("hidden");selectedWeek=null}
 function submitWeek(){
  if(!selectedWeek)return;let k=selectedWeek,w=weekStatus(k);
- if(!vName()||!$("verifyDate").value||!$("verifyRemarks").value.trim()){alert("Please complete the verifier name (select from the list, or specify if Other), verification date/time, and verification remarks.");return}
+ if(!vName()||!$("verifyDate").value||!$("verifyRemarks").value.trim()){alert("Please complete the reviewer name (select from the list, or specify if Other), review date/time, and review remarks.");return}
  if(!vPli()||!$("vq2").value||!$("vq3").value||!$("vq4").value){alert("Please answer all four verification questions (including the name of the PLI in charge of blast freezing monitoring).");return}
  let hasDev=w.rs.some(r=>r.assessment==="Deviation");
  if(hasDev&&(!$("vAction").value.trim()||!$("vResult").value.trim()||!$("vDisp").value.trim())){alert("This week has deviation(s). Please complete Action Taken, Result of Action Taken, and Product Disposition (type N/A if none).");return}
  if($("vPad").dataset.has!=="1"){alert("Please sign in the signature box.");return}
- let pend=w.rs.filter(r=>r.verification==="Pending Verification"),dec=$("decision").value,name=vName(),dt=$("verifyDate").value,rm=$("verifyRemarks").value.trim();
+ let pend=w.rs.filter(r=>r.verification==="Pending Verification"||r.verification==="Pending Review"),dec=$("decision").value,name=vName(),dt=$("verifyDate").value,rm=$("verifyRemarks").value.trim();
  pend.forEach(r=>{r.verification=dec;r.verifier=name;r.verifyDate=dt;r.decisionRemarks=rm});
  (weeklyVer[k]=weeklyVer[k]||[]).push({verifier:name,date:dt,decision:dec,remarks:rm,sig:$("vPad").toDataURL(),count:pend.length,checks:{q1:vPli(),q2:$("vq2").value,q3:$("vq3").value,q4:$("vq4").value},dev:hasDev?{action:$("vAction").value.trim(),result:$("vResult").value.trim(),disp:$("vDisp").value.trim()}:null});
  localStorage.setItem("hourlyTempWeeklyVerifications",JSON.stringify(weeklyVer));
  save();
  closeWeek();
  triggerServerSync();
- alert("Weekly verification saved for "+pend.length+" record(s). Synced to cloud storage.");
+ alert("Weekly review saved for "+pend.length+" record(s). Synced to cloud storage.");
 }
 
 // Initialization
