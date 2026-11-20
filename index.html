@@ -2609,7 +2609,7 @@ function buildQAC075Html(d, sh){
   </div>`;
 }
 
-function renderQAC075Report(d, sh, autoDownload = false){
+function renderQAC075Report(d, sh){
   _currentQacDate = d;
   _currentQacShift = sh;
   const doc = $("qacReportDoc");
@@ -2617,9 +2617,6 @@ function renderQAC075Report(d, sh, autoDownload = false){
   doc.innerHTML = buildQAC075Html(d, sh);
   const modal = $("qacReportModal");
   if(modal) modal.classList.remove("hidden");
-  if(autoDownload){
-    setTimeout(downloadCurrentQACReport, 150);
-  }
 }
 
 function openQACReportPreview(source){
@@ -2628,17 +2625,28 @@ function openQACReportPreview(source){
   if(source === "counter" && $("cSheetDate")){
     d = $("cSheetDate").value || d;
   }
-  renderQAC075Report(d, sh, false);
+  renderQAC075Report(d, sh);
 }
 
 function downloadCurrentQACReport(){
   const el = $("qacReportDoc");
   if(!el || !el.innerHTML.trim()){
-    alert("Report content is empty.");
+    alert("Walang laman ang report.");
     return;
   }
   const d = _currentQacDate || currentStamp().date;
-  const sh = _currentQacShift || "Day_Shift";
+  const sh = _currentQacShift || "Day Shift";
+
+  // Confirmation prompt bago mag-download (hindi automatic)
+  const isConfirmed = confirm(
+    `Kumpirmahin ang Pag-download:\n\n` +
+    `Gusto mo bang i-download at i-save ang Official QAC075 PDF Report?\n\n` +
+    `• Petsa: ${d}\n` +
+    `• Shift: ${sh}\n\n` +
+    `I-click ang OK para i-download, o Cancel kung ayaw muna.`
+  );
+  if(!isConfirmed) return;
+
   toast("Generating Official QAC075 PDF... Please wait.");
 
   if(window.html2pdf){
@@ -2674,13 +2682,15 @@ function closeQACReportModal(){
 function downloadSheetPDF(){
   const d = $("sheetDate").value || currentStamp().date;
   const sh = $("sheetShift").value || "Day Shift";
-  renderQAC075Report(d, sh, true);
+  renderQAC075Report(d, sh);
+  downloadCurrentQACReport();
 }
 
 function downloadCounterPDF(){
   const d = $("cSheetDate").value || currentStamp().date;
   const sh = $("sheetShift") ? $("sheetShift").value : "Day Shift";
-  renderQAC075Report(d, sh, true);
+  renderQAC075Report(d, sh);
+  downloadCurrentQACReport();
 }
 
 function printSheet(c){c=c||"ps";document.body.classList.add(c);window.print();document.body.classList.remove(c)}
