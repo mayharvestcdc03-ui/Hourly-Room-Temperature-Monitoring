@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hourly Room Temperature Monitoring System | May Harvest Corporation</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="icon" type="image/png" href="/assets/mhc-logo.png">
 <style>
 :root{
@@ -1236,7 +1237,17 @@ function getMemCal(i){
   return roomThermos[i]?.cal||"";
 }
 
-// Cloud Sync Engine
+// Supabase Cloud Sync Engine
+const SUPABASE_URL = 'https://svquyjpguhrmhzbgynsw.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_J6udCVSr_aA2_LYp5QcSGQ_hMFu_wMA';
+let supabaseClient = null;
+try {
+  if (window.supabase && window.supabase.createClient) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('[MHC] Supabase Room Temp Cloud Sync initialized!');
+  }
+} catch(e) {}
+
 let syncTimeout = null, isPulling = false;
 
 function setSyncBadge(status, text){
@@ -1272,12 +1283,34 @@ function triggerServerSync(){
 async function pushSync(){
   try{
     setSyncBadge("syncing","Saving to cloud...");
-    const res = await fetch("/api/sync", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(getFullPayload())
-    });
-    if(res.ok){
+    const payload = getFullPayload();
+    let cloudSaved = false;
+
+    // 1. Save to Supabase Cloud DB
+    if(supabaseClient){
+      try{
+        await supabaseClient.from('party_sync').upsert({
+          room: 'room_temp',
+          data: payload,
+          updated_at: new Date().toISOString()
+        });
+        cloudSaved = true;
+      }catch(e){
+        console.warn('[MHC] Supabase sync error:', e);
+      }
+    }
+
+    // 2. Also save to Local Server
+    try{
+      const res = await fetch("/api/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if(res.ok) cloudSaved = true;
+    }catch(e){}
+
+    if(cloudSaved){
       setSyncBadge("synced","Cloud Synced");
     } else {
       setSyncBadge("synced","Saved Locally");
@@ -1287,89 +1320,127 @@ async function pushSync(){
   }
 }
 
+function applyServerPayload(sData){
+  if(!sData) return;
+  let changed = false;
+
+  // 1. Records
+  if(Array.isArray(sData.records)){
+    const rMap = new Map();
+    data.forEach(r => rMap.set(r.id || `${r.date}_${r.time}_${r.area}`, r));
+    sData.records.forEach(r => {
+      const k = r.id || `${r.date}_${r.time}_${r.area}`;
+      if(!rMap.has(k)){
+        rMap.set(k, r);
+        changed = true;
+      } else {
+        const ex = rMap.get(k);
+        if(r.verification !== ex.verification || r.verifier !== ex.verifier){
+          rMap.set(k, { ...ex, ...r });
+          changed = true;
+        }
+      }
+    });
+    if(changed){
+      data = Array.from(rMap.values());
+      localStorage.setItem("hourlyTempRecords", JSON.stringify(data));
+    }
+  }
+
+  // 2. Counter Checks
+  if(Array.isArray(sData.counterChecks)){
+    const cMap = new Map();
+    cdata.forEach(c => cMap.set(c.id || `${c.date}_${c.time}_${c.area}`, c));
+    let cChanged = false;
+    sData.counterChecks.forEach(c => {
+      const k = c.id || `${c.date}_${c.time}_${c.area}`;
+      if(!cMap.has(k)){
+        cMap.set(k, c);
+        cChanged = true;
+      }
+    });
+    if(cChanged){
+      cdata = Array.from(cMap.values());
+      localStorage.setItem("hourlyTempCounterChecks", JSON.stringify(cdata));
+      changed = true;
+    }
+  }
+
+  // 3. Sheet Signatures
+  if(sData.sheetSigs && JSON.stringify(sData.sheetSigs) !== JSON.stringify(sheetSigs)){
+    sheetSigs = { ...sheetSigs, ...sData.sheetSigs };
+    localStorage.setItem("hourlyTempSheetSigs", JSON.stringify(sheetSigs));
+    changed = true;
+  }
+
+  // 4. Counter Sheet Signatures
+  if(sData.counterSheetSigs && JSON.stringify(sData.counterSheetSigs) !== JSON.stringify(counterSigs)){
+    counterSigs = { ...counterSigs, ...sData.counterSheetSigs };
+    localStorage.setItem("hourlyTempCounterSheetSigs", JSON.stringify(counterSigs));
+    changed = true;
+  }
+
+  // 5. Weekly Verifications
+  if(sData.weeklyVerifications && JSON.stringify(sData.weeklyVerifications) !== JSON.stringify(weeklyVer)){
+    weeklyVer = { ...weeklyVer, ...sData.weeklyVerifications };
+    localStorage.setItem("hourlyTempWeeklyVerifications", JSON.stringify(weeklyVer));
+    changed = true;
+  }
+
+  if(changed){
+    render();
+    renderSheet();
+    renderCounterSheet();
+    renderWeeks();
+    refreshLocks();
+  }
+  setSyncBadge("synced","Cloud Synced");
+}
+
 async function pullServerData(){
   if(isPulling) return;
+  isPulling = true;
   try{
+    // 1. Try Supabase Cloud DB first
+    if(supabaseClient){
+      try{
+        const { data: sRow, error } = await supabaseClient
+          .from('party_sync')
+          .select('data')
+          .eq('room', 'room_temp')
+          .single();
+        if(!error && sRow && sRow.data){
+          applyServerPayload(sRow.data);
+          isPulling = false;
+          return;
+        }
+      }catch(e){}
+    }
+
+    // 2. Fallback to local server
     const res = await fetch("/api/data");
-    if(!res.ok) return;
-    const sData = await res.json();
-    if(!sData) return;
-    let changed = false;
-
-    // 1. Records
-    if(Array.isArray(sData.records)){
-      const rMap = new Map();
-      data.forEach(r => rMap.set(r.id || `${r.date}_${r.time}_${r.area}`, r));
-      sData.records.forEach(r => {
-        const k = r.id || `${r.date}_${r.time}_${r.area}`;
-        if(!rMap.has(k)){
-          rMap.set(k, r);
-          changed = true;
-        } else {
-          const ex = rMap.get(k);
-          if(r.verification !== ex.verification || r.verifier !== ex.verifier){
-            rMap.set(k, { ...ex, ...r });
-            changed = true;
-          }
-        }
-      });
-      if(changed){
-        data = Array.from(rMap.values());
-        localStorage.setItem("hourlyTempRecords", JSON.stringify(data));
-      }
+    if(res.ok){
+      const sData = await res.json();
+      if(sData) applyServerPayload(sData);
     }
-
-    // 2. Counter Checks
-    if(Array.isArray(sData.counterChecks)){
-      const cMap = new Map();
-      cdata.forEach(c => cMap.set(c.id || `${c.date}_${c.time}_${c.area}`, c));
-      let cChanged = false;
-      sData.counterChecks.forEach(c => {
-        const k = c.id || `${c.date}_${c.time}_${c.area}`;
-        if(!cMap.has(k)){
-          cMap.set(k, c);
-          cChanged = true;
-        }
-      });
-      if(cChanged){
-        cdata = Array.from(cMap.values());
-        localStorage.setItem("hourlyTempCounterChecks", JSON.stringify(cdata));
-        changed = true;
-      }
-    }
-
-    // 3. Sheet Signatures
-    if(sData.sheetSigs && JSON.stringify(sData.sheetSigs) !== JSON.stringify(sheetSigs)){
-      sheetSigs = { ...sheetSigs, ...sData.sheetSigs };
-      localStorage.setItem("hourlyTempSheetSigs", JSON.stringify(sheetSigs));
-      changed = true;
-    }
-
-    // 4. Counter Sheet Signatures
-    if(sData.counterSheetSigs && JSON.stringify(sData.counterSheetSigs) !== JSON.stringify(counterSigs)){
-      counterSigs = { ...counterSigs, ...sData.counterSheetSigs };
-      localStorage.setItem("hourlyTempCounterSheetSigs", JSON.stringify(counterSigs));
-      changed = true;
-    }
-
-    // 5. Weekly Verifications
-    if(sData.weeklyVerifications && JSON.stringify(sData.weeklyVerifications) !== JSON.stringify(weeklyVer)){
-      weeklyVer = { ...weeklyVer, ...sData.weeklyVerifications };
-      localStorage.setItem("hourlyTempWeeklyVerifications", JSON.stringify(weeklyVer));
-      changed = true;
-    }
-
-    if(changed){
-      render();
-      renderSheet();
-      renderCounterSheet();
-      renderWeeks();
-      refreshLocks();
-    }
-    setSyncBadge("synced","Cloud Synced");
   } catch(e){
     // Background polling catch
   }
+  isPulling = false;
+}
+
+// Setup Supabase Realtime Listener for Instant Updates across PCs
+if(supabaseClient){
+  try{
+    supabaseClient
+      .channel('realtime_room_temp')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'party_sync', filter: 'room=eq.room_temp' }, payload => {
+        if(payload.new && payload.new.data){
+          applyServerPayload(payload.new.data);
+        }
+      })
+      .subscribe();
+  }catch(e){}
 }
 
 // Background polling every 3.5s
