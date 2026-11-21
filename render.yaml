@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: hourly-room-temperature-monitoring
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
