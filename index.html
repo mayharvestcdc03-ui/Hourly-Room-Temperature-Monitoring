@@ -218,7 +218,7 @@ td .status{white-space:nowrap}
 .sheet .c1{left:0;min-width:200px;max-width:200px;text-align:left}
 .sheet .c2{left:200px;min-width:125px;max-width:125px;white-space:nowrap}
 .sheet td.room{font-weight:600}
-.sheet td.cell{min-width:62px;height:34px}
+.sheet td.cell{min-width:68px;height:34px}
 .sheet .rd{cursor:pointer;border-radius:4px;padding:1px 3px;margin:1px 0}
 .sheet .rd:hover{background:#e6f1f6}
 .sheet .rd .t{font-weight:700;font-size:12px}
@@ -952,7 +952,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
       <div>STANDARD</div>
       <div>ITME CODE</div>
       <div>CALIBRATION DATE</div>
-      <div>ACTUAL TEMPERATURE</div>
+      <div>ACTUAL TEMPERATURE (°C)</div>
       <div>TIME</div>
       <div>STATUS</div>
       <div>ACTION</div>
@@ -1013,7 +1013,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
    <h3 style="margin-top:22px">Rooms / Areas to Counter Check</h3>
    <div class="clockbar">Current date and time: <b id="liveClock2">--</b></div>
    <div class="rooms">
-    <div class="rl-head crl"><div>#</div><div>ROOM / AREA</div><div>STANDARD</div><div>LATEST MONITORING READING</div><div>COUNTER CHECK TEMPERATURE</div><div>TIME RECORDED</div><div>STATUS</div></div>
+    <div class="rl-head crl"><div>#</div><div>ROOM / AREA</div><div>STANDARD</div><div>LATEST MONITORING (°C)</div><div>COUNTER CHECK TEMP (°C)</div><div>TIME RECORDED</div><div>STATUS</div></div>
     <div id="cRoomRows"></div>
    </div>
    <div id="cAssessment" class="notice">Type a counter check reading beside any room. Its status and time will appear here and in the row.</div>
@@ -1567,7 +1567,7 @@ function buildRoomList(){
      <div class="rl-temp">
        <div class="tempbox">
          <button type="button" class="signbtn" id="rlb${i}" data-i="${i}" tabindex="-1" title="Switch negative/positive" aria-label="Toggle minus sign">&plusmn;</button>
-         <input class="tin" id="tin${i}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter temp" aria-label="Actual temperature for ${esc(a[0])}">
+         <input class="tin" id="tin${i}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter temp (°C)" aria-label="Actual temperature for ${esc(a[0])}">
          <button type="button" class="nabtn" id="nab${i}" data-i="${i}" title="Room not in operation (N/A)" onclick="setTempNA(${i})">N/A</button>
        </div>
      </div>
@@ -1793,7 +1793,7 @@ function refreshLocks(){
   if(tin){
     tin.disabled=false;
     if(isRecorded && !tin.value && rec){
-      tin.value=rec.temp==="N/A"?"N/A":(typeof rec.temp==="number"?rec.temp+"°C":rec.temp);
+      tin.value=rec.temp==="N/A"?"N/A":(typeof rec.temp==="number"?rec.temp+"°C":(String(rec.temp).includes("°C")?rec.temp:rec.temp+"°C"));
     }
   }
   if(th){
@@ -2313,7 +2313,7 @@ personnel.forEach(p=>$("cPeople").appendChild(new Option(p,p)));
 const latestMon=area=>data.filter(r=>r.area===area).sort(sortByDateTimeDesc)[0];
 const crl={state:[]};
 function buildCounterRooms(){
- $("cRoomRows").innerHTML=areas.map((a,i)=>`<div class="rl-row crl-row" id="crl${i}"><div class="rl-no">${i+1}</div><div class="rl-room">${esc(a[0])}</div><div class="rl-std">${esc(a[3])}</div><div class="rl-mon" id="crm${i}"></div><div class="rl-temp"><div class="tempbox"><button type="button" class="signbtn" id="crb${i}" data-i="${i}" tabindex="-1" title="Switch between negative and positive" aria-label="Toggle minus sign">&plusmn;</button><input class="tin" id="ctin${i}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter temp" aria-label="Counter check temperature for ${esc(a[0])}"></div></div><div class="rl-time" id="crt${i}"><b></b><small></small></div><div class="rl-stat" id="crs${i}"></div><div class="rl-rem hidden" id="crr${i}"><input id="crri${i}" placeholder="Remarks / action taken (out of standard or discrepancy)"></div></div>`).join("");
+ $("cRoomRows").innerHTML=areas.map((a,i)=>`<div class="rl-row crl-row" id="crl${i}"><div class="rl-no">${i+1}</div><div class="rl-room">${esc(a[0])}</div><div class="rl-std">${esc(a[3])}</div><div class="rl-mon" id="crm${i}"></div><div class="rl-temp"><div class="tempbox"><button type="button" class="signbtn" id="crb${i}" data-i="${i}" tabindex="-1" title="Switch between negative and positive" aria-label="Toggle minus sign">&plusmn;</button><input class="tin" id="ctin${i}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter temp (°C)" aria-label="Counter check temperature for ${esc(a[0])}"></div></div><div class="rl-time" id="crt${i}"><b></b><small></small></div><div class="rl-stat" id="crs${i}"></div><div class="rl-rem hidden" id="crr${i}"><input id="crri${i}" placeholder="Remarks / action taken (out of standard or discrepancy)"></div></div>`).join("");
  const box=$("cRoomRows");
  box.addEventListener("input",e=>{if(e.target.classList.contains("tin"))onCTemp(Number(e.target.dataset.i))});
  box.addEventListener("keydown",e=>{if(e.target.classList.contains("tin"))onCKey(e,Number(e.target.dataset.i))});
@@ -2525,7 +2525,7 @@ function renderSheet(){
    return `<td class="cell">${rs.map(r=>{
      const isNA=r.temp==="N/A"||String(r.assessment).includes("N/A");
      const cls=isNA?" na":(r.assessment==="Deviation"?" dev":"");
-     const txt=isNA?"N/A":(typeof r.temp==="number"?r.temp.toFixed(1):r.temp);
+     const txt=isNA?"N/A":(typeof r.temp==="number"?r.temp.toFixed(1)+"°C":(String(r.temp).includes("°C")?r.temp:r.temp+"°C"));
      return `<div class="rd${cls}" onclick="viewRecord(${r.id})" title="${esc(r.monitor)} • ${esc(r.time)} • ITME Code: ${esc(r.thermo)} • ${esc(r.assessment)}"><span class="t">${esc(txt)}</span><br><span class="tm">${esc(r.time.slice(0,5))}</span></div>`;
    }).join("")}</td>`;
  }).join("")}</tr>`).join("");
@@ -2935,7 +2935,7 @@ function renderCounterSheet(){
    return `<td class="cell">${rs.map(r=>{
      const isNA=r.temp==="N/A"||String(r.assessment).includes("N/A");
      const cls=isNA?" na":(r.assessment==="Deviation"||r.result==="Discrepancy"?" dev":"");
-     const txt=isNA?"N/A":(typeof r.temp==="number"?r.temp.toFixed(1):r.temp);
+     const txt=isNA?"N/A":(typeof r.temp==="number"?r.temp.toFixed(1)+"°C":(String(r.temp).includes("°C")?r.temp:r.temp+"°C"));
      return `<div class="rd${cls}" onclick="viewCounter(${r.id})" title="${esc(r.checker)} • ${esc(r.time)}"><span class="t">${esc(txt)}</span><br><span class="tm">${esc(r.time.slice(0,5))}</span></div>`;
    }).join("")}</td>`;
  }).join("")}</tr>`).join("");
