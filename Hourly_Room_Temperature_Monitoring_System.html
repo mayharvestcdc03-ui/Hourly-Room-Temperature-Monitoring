@@ -919,6 +919,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
   <div id="sheetBlock">
    <div class="sheetbar">
      <div class="field"><label for="sheetDate">MONITORING DATE</label><input type="date" id="sheetDate"></div>
+     <button type="button" class="secondary" onclick="setSheetDateToday();renderSheet();" style="align-self:flex-end;margin-bottom:2px;font-size:12px;padding:6px 12px" title="Set to Today's Date">📅 Today</button>
      <div class="field"><label for="sheetShift">SHIFT</label><select id="sheetShift"><option value="Day Shift">Day Shift (5:00 AM – 2:00 PM)</option><option value="Mid Shift">Mid Shift (1:00 PM – 10:00 PM)</option><option value="Night Shift">Night Shift (9:00 PM – 6:00 AM)</option></select></div>
      <button type="button" class="success" onclick="downloadSheetPDF()">📄 Download Official PDF (QAC075)</button>
      <button type="button" class="secondary" onclick="openQACReportPreview()">👁️ Preview QAC075 Form</button>
@@ -968,6 +969,7 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
   <h3 style="margin-top:26px">Counter Checking Checklist</h3>
   <div id="counterSheetBlock">
    <div class="sheetbar"><div class="field"><label for="cSheetDate">COUNTER CHECK DATE</label><input type="date" id="cSheetDate"></div>
+     <button type="button" class="secondary" onclick="$('cSheetDate').value=currentStamp().date;renderCounterSheet();renderCounterSigs();" style="align-self:flex-end;margin-bottom:2px;font-size:12px;padding:6px 12px" title="Set to Today's Date">📅 Today</button>
      <button type="button" class="success" onclick="downloadCounterPDF()">📄 Download Official PDF (QAC075)</button>
      <button type="button" class="secondary" onclick="openQACReportPreview('counter')">👁️ Preview QAC075 Form</button>
      <button type="button" class="secondary" onclick="printSheet('psc')">Print Quick Sheet</button>
@@ -1300,15 +1302,17 @@ async function pushSync(){
       }
     }
 
-    // 2. Also save to Local Server
-    try{
-      const res = await fetch("/api/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if(res.ok) cloudSaved = true;
-    }catch(e){}
+    // 2. Also save to Local Server (when running on localhost)
+    if(location.hostname === "localhost" || location.hostname === "127.0.0.1"){
+      try{
+        const res = await fetch("/api/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if(res.ok) cloudSaved = true;
+      }catch(e){}
+    }
 
     if(cloudSaved){
       setSyncBadge("synced","Cloud Synced");
@@ -1335,7 +1339,7 @@ function applyServerPayload(sData){
         changed = true;
       } else {
         const ex = rMap.get(k);
-        if(r.verification !== ex.verification || r.verifier !== ex.verifier){
+        if(r.verification !== ex.verification || r.verifier !== ex.verifier || r.temp !== ex.temp || r.remarks !== ex.remarks || r.assessment !== ex.assessment){
           rMap.set(k, { ...ex, ...r });
           changed = true;
         }
@@ -1417,11 +1421,13 @@ async function pullServerData(){
       }catch(e){}
     }
 
-    // 2. Fallback to local server
-    const res = await fetch("/api/data");
-    if(res.ok){
-      const sData = await res.json();
-      if(sData) applyServerPayload(sData);
+    // 2. Fallback to local server (only when running on localhost)
+    if(location.hostname === "localhost" || location.hostname === "127.0.0.1"){
+      const res = await fetch("/api/data");
+      if(res.ok){
+        const sData = await res.json();
+        if(sData) applyServerPayload(sData);
+      }
     }
   } catch(e){
     // Background polling catch
@@ -1451,9 +1457,20 @@ async function resetAllRecords(){
   if(!ok)return;
   ["hourlyTempRecords","hourlyTempCounterChecks","hourlyTempSheetSigs","hourlyTempCounterSheetSigs","hourlyTempWeeklyVerifications"].forEach(key=>localStorage.removeItem(key));
   data=[]; cdata=[]; sheetSigs={}; counterSigs={}; weeklyVer={};
-  try{
-    await fetch("/api/reset", { method: "POST" });
-  }catch(e){}
+  if(supabaseClient){
+    try{
+      await supabaseClient.from('party_sync').upsert({
+        room: 'room_temp',
+        data: { records:[], counterChecks:[], sheetSigs:{}, counterSheetSigs:{}, weeklyVerifications:{} },
+        updated_at: new Date().toISOString()
+      });
+    }catch(e){}
+  }
+  if(location.hostname === "localhost" || location.hostname === "127.0.0.1"){
+    try{
+      await fetch("/api/reset", { method: "POST" });
+    }catch(e){}
+  }
   alert("All saved records have been reset. The system will now reload.");
   location.reload();
 }
@@ -1868,11 +1885,12 @@ function saveSingleRoom(i){
     }
   }
 
+  const now = currentStamp();
   const a=areas[i];
   const rec={
     id:Date.now()+i,
-    date:s.stamp.date,
-    time:s.stamp.time,
+    date:now.date,
+    time:now.time,
     area:a[0],
     temp:s.isNA?"N/A":s.temp,
     standard:a[3],
@@ -1946,6 +1964,7 @@ $("entryForm").addEventListener("submit",e=>{
  }
 
  const created=[];
+ const now = currentStamp();
  filled.forEach(i=>{
   const s=rl.state[i], a=areas[i];
   const th=$("th"+i).value.trim();
@@ -1954,8 +1973,8 @@ $("entryForm").addEventListener("submit",e=>{
 
   const rec={
    id:Date.now()+i,
-   date:s.stamp.date,
-   time:s.stamp.time,
+   date:now.date,
+   time:now.time,
    area:a[0],
    temp:s.isNA?"N/A":s.temp,
    standard:a[3],
@@ -1995,10 +2014,169 @@ function showTab(tab){
    if(btn) btn.classList.toggle("active",id===tab);
  });
  window.scrollTo({top:0,behavior:"smooth"});
- if(tab==="records"){renderSheet()}
- else if(tab==="counter"){renderCounter();renderCounterSheet();renderCounterSigs()}
+ if(tab==="records"){
+   setSheetDateToday();
+   renderSheet();
+ }
+ else if(tab==="counter"){
+   const today = currentStamp().date;
+   if(!$("cSheetDate").value || $("cSheetDate").value !== today){
+     $("cSheetDate").value = today;
+   }
+   if(!$("cShift").value){
+     $("cShift").value = getCurrentShift();
+   }
+   renderCounter();
+   renderCounterSheet();
+   renderCounterSigs();
+ }
  else if(tab==="verify"){renderWeeks()}
  else if(tab==="extremes"){updateTemperatureExtremes()}
+}
+
+function updateTemperatureExtremes(){
+  const today = currentStamp().date;
+
+  function parseLocalDate(dStr){
+    if(!dStr) return null;
+    const parts = dStr.split("-").map(Number);
+    if(parts.length < 3 || isNaN(parts[0])) return null;
+    return new Date(parts[0], parts[1]-1, parts[2]);
+  }
+
+  function getWeekRangeForDate(dStr){
+    const d = parseLocalDate(dStr);
+    if(!d) return { start: dStr, end: dStr };
+    const day = d.getDay();
+    const diffToMon = day === 0 ? -6 : 1 - day;
+    const mon = new Date(d);
+    mon.setDate(d.getDate() + diffToMon);
+    const sun = new Date(mon);
+    sun.setDate(mon.getDate() + 6);
+    return {
+      start: toDateStr(mon),
+      end: toDateStr(sun)
+    };
+  }
+
+  const currentWeek = getWeekRangeForDate(today);
+  const currentMonth = today.slice(0, 7);
+
+  const numRecords = data.filter(r => {
+    if(r.temp === "N/A" || r.temp === null || r.temp === undefined) return false;
+    const val = Number(r.temp);
+    return !isNaN(val);
+  });
+
+  function getExtremes(recs){
+    if(!recs || !recs.length) return null;
+    let high = recs[0], low = recs[0];
+    let maxT = Number(recs[0].temp), minT = Number(recs[0].temp);
+    for(let i=1; i<recs.length; i++){
+      const t = Number(recs[i].temp);
+      if(t > maxT){
+        maxT = t;
+        high = recs[i];
+      }
+      if(t < minT){
+        minT = t;
+        low = recs[i];
+      }
+    }
+    return { high, low, maxT, minT };
+  }
+
+  // 1. Today's Extremes
+  const todayRecs = numRecords.filter(r => r.date === today);
+  const todayExtremes = getExtremes(todayRecs);
+  if(todayExtremes){
+    if($("dayHigh")) $("dayHigh").textContent = todayExtremes.maxT.toFixed(1) + "°C";
+    if($("dayHighMeta")) $("dayHighMeta").textContent = `${todayExtremes.high.area} • ${todayExtremes.high.time.slice(0,5)}`;
+    if($("dayLow")) $("dayLow").textContent = todayExtremes.minT.toFixed(1) + "°C";
+    if($("dayLowMeta")) $("dayLowMeta").textContent = `${todayExtremes.low.area} • ${todayExtremes.low.time.slice(0,5)}`;
+  } else {
+    if($("dayHigh")) $("dayHigh").textContent = "--";
+    if($("dayHighMeta")) $("dayHighMeta").textContent = "No numeric readings today";
+    if($("dayLow")) $("dayLow").textContent = "--";
+    if($("dayLowMeta")) $("dayLowMeta").textContent = "No numeric readings today";
+  }
+
+  // 2. This Week's Extremes
+  const weekRecs = numRecords.filter(r => r.date >= currentWeek.start && r.date <= currentWeek.end);
+  const weekExtremes = getExtremes(weekRecs);
+  if(weekExtremes){
+    if($("weekHigh")) $("weekHigh").textContent = weekExtremes.maxT.toFixed(1) + "°C";
+    if($("weekHighMeta")) $("weekHighMeta").textContent = `${weekExtremes.high.area} • ${weekExtremes.high.date} ${weekExtremes.high.time.slice(0,5)}`;
+    if($("weekLow")) $("weekLow").textContent = weekExtremes.minT.toFixed(1) + "°C";
+    if($("weekLowMeta")) $("weekLowMeta").textContent = `${weekExtremes.low.area} • ${weekExtremes.low.date} ${weekExtremes.low.time.slice(0,5)}`;
+  } else {
+    if($("weekHigh")) $("weekHigh").textContent = "--";
+    if($("weekHighMeta")) $("weekHighMeta").textContent = "No numeric readings this week";
+    if($("weekLow")) $("weekLow").textContent = "--";
+    if($("weekLowMeta")) $("weekLowMeta").textContent = "No numeric readings this week";
+  }
+
+  // 3. This Month's Extremes
+  const monthRecs = numRecords.filter(r => r.date && r.date.startsWith(currentMonth));
+  const monthExtremes = getExtremes(monthRecs);
+  if(monthExtremes){
+    if($("monthHigh")) $("monthHigh").textContent = monthExtremes.maxT.toFixed(1) + "°C";
+    if($("monthHighMeta")) $("monthHighMeta").textContent = `${monthExtremes.high.area} • ${monthExtremes.high.date}`;
+    if($("monthLow")) $("monthLow").textContent = monthExtremes.minT.toFixed(1) + "°C";
+    if($("monthLowMeta")) $("monthLowMeta").textContent = `${monthExtremes.low.area} • ${monthExtremes.low.date}`;
+  } else {
+    if($("monthHigh")) $("monthHigh").textContent = "--";
+    if($("monthHighMeta")) $("monthHighMeta").textContent = "No numeric readings this month";
+    if($("monthLow")) $("monthLow").textContent = "--";
+    if($("monthLowMeta")) $("monthLowMeta").textContent = "No numeric readings this month";
+  }
+
+  // 4. Room-by-room History Table
+  const tbody = $("extremesTableBody");
+  if(tbody){
+    function formatRange(minT, maxT){
+      if(minT === null || minT === undefined) return '<span style="color:#94a3b8">—</span>';
+      if(minT === maxT) return `<b>${minT.toFixed(1)}°C</b>`;
+      return `<span style="color:#1d4ed8;font-weight:700">${minT.toFixed(1)}°C</span> <span style="color:#64748b">to</span> <span style="color:#b91c1c;font-weight:700">${maxT.toFixed(1)}°C</span>`;
+    }
+
+    tbody.innerHTML = areas.map((a, i) => {
+      const areaName = a[0];
+      const areaStd = a[3];
+
+      const roomNum = numRecords.filter(r => r.area === areaName);
+      const roomToday = roomNum.filter(r => r.date === today);
+      const roomWeek = roomNum.filter(r => r.date >= currentWeek.start && r.date <= currentWeek.end);
+      const roomMonth = roomNum.filter(r => r.date && r.date.startsWith(currentMonth));
+
+      const extToday = getExtremes(roomToday);
+      const extWeek = getExtremes(roomWeek);
+      const extMonth = getExtremes(roomMonth);
+
+      const todayRange = extToday ? formatRange(extToday.minT, extToday.maxT) : '<span style="color:#94a3b8">—</span>';
+      const weekRange = extWeek ? formatRange(extWeek.minT, extWeek.maxT) : '<span style="color:#94a3b8">—</span>';
+      const monthRange = extMonth ? formatRange(extMonth.minT, extMonth.maxT) : '<span style="color:#94a3b8">—</span>';
+
+      const latest = data.filter(r => r.area === areaName).sort((x, y) => y.id - x.id)[0];
+      let latestHtml = '<span style="color:#94a3b8">—</span>';
+      if(latest){
+        const isNA = latest.temp === "N/A" || String(latest.assessment).includes("N/A");
+        const tDisplay = isNA ? '<b style="color:#64748b">N/A</b>' : `<b>${Number(latest.temp).toFixed(1)}°C</b>`;
+        const statBadge = badge(latest.assessment);
+        latestHtml = `<div>${tDisplay} <small>(${esc(latest.date)} ${esc(latest.time ? latest.time.slice(0,5) : "")})</small> ${statBadge}</div>`;
+      }
+
+      return `<tr>
+        <td>${i+1}</td>
+        <td><b>${esc(areaName)}</b></td>
+        <td>${esc(areaStd)}</td>
+        <td>${todayRange}</td>
+        <td>${weekRange}</td>
+        <td>${monthRange}</td>
+        <td>${latestHtml}</td>
+      </tr>`;
+    }).join("");
+  }
 }
 function badge(st){
  let displaySt = st;
@@ -2237,12 +2415,13 @@ $("counterForm").addEventListener("submit",e=>{
   }
  }
  const created=[];
+ const now = currentStamp();
  filled.forEach(i=>{
   const s=crl.state[i], a=areas[i];
   const rec={
    id:Date.now()+i,
-   date:s.stamp.date,
-   time:s.stamp.time,
+   date:now.date,
+   time:now.time,
    area:a[0],
    temp:s.temp,
    assessment:s.ok?"Compliant":"Deviation",
@@ -2271,15 +2450,30 @@ $("counterForm").addEventListener("submit",e=>{
 });
 
 // Shift Sheet Generation
-const sd=r=>{let d=r.date;if(r.shift==="Night Shift"&&Number(r.time.slice(0,2))>=21){let x=new Date(d+"T00:00:00");x.setDate(x.getDate()+1);return x.toISOString().slice(0,10)}return d};
+const toDateStr=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+function getCurrentShift(hour){
+ if(hour === undefined) hour = new Date().getHours();
+ if(hour >= 5 && hour < 14) return "Day Shift";
+ if(hour >= 14 && hour < 21) return "Mid Shift";
+ return "Night Shift";
+}
+
+function setSheetDateToday(){
+ $("sheetDate").value = currentStamp().date;
+ $("sheetShift").value = getCurrentShift();
+}
+
+const sd=r=>{let d=r.date;if(r.shift==="Night Shift"&&Number(r.time.slice(0,2))>=21){const p=d.split("-").map(Number);let x=new Date(p[0],p[1]-1,p[2]);x.setDate(x.getDate()+1);return toDateStr(x)}return d};
 const shiftLabel=s=>({"Day Shift":"5:00 AM – 2:00 PM","Mid Shift":"1:00 PM – 10:00 PM","Night Shift":"9:00 PM – 6:00 AM"}[s]||s);
 const shiftSlots=(sh,d)=>{
  let day=d;
  if(sh==="Day Shift") return [5,6,7,8,9,10,11,12,13,14].map(h=>day+"|"+pad(h));
  if(sh==="Mid Shift") return [13,14,15,16,17,18,19,20,21,22].map(h=>day+"|"+pad(h));
  if(sh==="Night Shift"){
-  let prev=new Date(day+"T00:00:00");prev.setDate(prev.getDate()-1);let p=prev.toISOString().slice(0,10);
-  return [p+"|21",p+"|22",p+"|23",day+"|00",day+"|01",day+"|02",day+"|03",day+"|04",day+"|05",day+"|06"];
+  const p=day.split("-").map(Number);
+  let prev=new Date(p[0],p[1]-1,p[2]);prev.setDate(prev.getDate()-1);let prevStr=toDateStr(prev);
+  return [prevStr+"|21",prevStr+"|22",prevStr+"|23",day+"|00",day+"|01",day+"|02",day+"|03",day+"|04",day+"|05",day+"|06"];
  }
  return [];
 };
@@ -2336,8 +2530,7 @@ function removeSheetSig(key,i){
  triggerServerSync();
 }
 (()=>{
- let l=data.slice().sort((a,b)=>b.id-a.id)[0];
- if(l)focusSheet(l);else{$("sheetDate").value=currentStamp().date;$("sheetShift").value="Day Shift"}
+ setSheetDateToday();
 })();
 $("sheetDate").addEventListener("input",renderSheet);$("sheetShift").addEventListener("input",renderSheet);
 
@@ -2963,15 +3156,22 @@ buildCounterRooms();
 (function(){
   const tick=()=>{
     const d=new Date();
-    const str=d.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"})+"  "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+    const str=d.toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"})+"  "+pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
     $("liveClock").textContent=$("liveClock2").textContent=str;
     const headerClock=$("headerLiveClock");
-    if(headerClock) headerClock.textContent=d.toLocaleTimeString("en-US",{hour12:true});
+    if(headerClock) headerClock.textContent=d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+" • "+d.toLocaleTimeString("en-US",{hour12:true});
   };
   tick();
   setInterval(tick,1000);
   setInterval(refreshLocks,15000);
 })();
+
+// Set initial current date and current shift across forms
+setSheetDateToday();
+$("cSheetDate").value = currentStamp().date;
+$("cShift").value = getCurrentShift();
+const monShift = $("shift");
+if(monShift && !monShift.value) monShift.value = getCurrentShift();
 
 // Initial pull from cloud storage
 pullServerData();
