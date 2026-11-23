@@ -460,6 +460,59 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
 @media(max-width:850px){
   .hl-grid { grid-template-columns: 1fr; }
 }
+.hl-grid-all {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.hl-room-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  transition: all 0.15s ease;
+}
+.hl-room-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+.hl-room-card.has-dev {
+  border-color: #fca5a5;
+  background: #fffcfc;
+}
+.hl-room-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.hl-room-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--navy, #0f172a);
+  line-height: 1.3;
+}
+.hl-room-std {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.hl-room-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #64748b;
+  padding-top: 6px;
+  border-top: 1px dashed #e2e8f0;
+}
 
 /* ===== SOP Thermometer Sanitation Card ===== */
 .sop-card {
@@ -1082,77 +1135,23 @@ footer{text-align:center;color:#6b8296;font-size:11.5px;padding:20px;font-weight
  </section>
 
  <section id="extremes" class="panel hidden">
-  <h2>5. Highest &amp; Lowest Temperature Readings</h2>
+  <h2>5. Highest &amp; Lowest Temperature Readings (All Rooms)</h2>
   <div class="notice">
-    Real-time summary of the highest and lowest temperature readings recorded across all refrigerated rooms, blast freezers, and cold storages. N/A readings (rooms with no operation) are automatically excluded.
+    Real-time highest and lowest temperatures recorded for all 16 cold storage rooms, holding rooms, blast freezers, and production areas. N/A readings (rooms not in operation) are automatically excluded.
   </div>
 
-  <div class="hl-summary-container" style="border:none;box-shadow:none;padding:0;margin:12px 0 24px">
-    <div class="hl-grid">
-      <!-- Daily Card -->
-      <div class="hl-card">
-        <div class="hl-head">📅 TODAY'S READINGS</div>
-        <div class="hl-stat high">
-          <div class="hl-label">🔺 Highest</div>
-          <div class="hl-val" id="dayHigh">--</div>
-          <div class="hl-meta" id="dayHighMeta">No numeric readings today</div>
-        </div>
-        <div class="hl-stat low">
-          <div class="hl-label">🔻 Lowest</div>
-          <div class="hl-val" id="dayLow">--</div>
-          <div class="hl-meta" id="dayLowMeta">No numeric readings today</div>
-        </div>
-      </div>
-
-      <!-- Weekly Card -->
-      <div class="hl-card">
-        <div class="hl-head">📊 THIS WEEK (MON – SUN)</div>
-        <div class="hl-stat high">
-          <div class="hl-label">🔺 Highest</div>
-          <div class="hl-val" id="weekHigh">--</div>
-          <div class="hl-meta" id="weekHighMeta">No numeric readings this week</div>
-        </div>
-        <div class="hl-stat low">
-          <div class="hl-label">🔻 Lowest</div>
-          <div class="hl-val" id="weekLow">--</div>
-          <div class="hl-meta" id="weekLowMeta">No numeric readings this week</div>
-        </div>
-      </div>
-
-      <!-- Monthly Card -->
-      <div class="hl-card">
-        <div class="hl-head">🗓️ THIS MONTH</div>
-        <div class="hl-stat high">
-          <div class="hl-label">🔺 Highest</div>
-          <div class="hl-val" id="monthHigh">--</div>
-          <div class="hl-meta" id="monthHighMeta">No numeric readings this month</div>
-        </div>
-        <div class="hl-stat low">
-          <div class="hl-label">🔻 Lowest</div>
-          <div class="hl-val" id="monthLow">--</div>
-          <div class="hl-meta" id="monthLowMeta">No numeric readings this month</div>
-        </div>
-      </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin:14px 0 18px;background:#f8fafc;padding:12px 14px;border-radius:10px;border:1px solid #e2e8f0">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" class="tab-btn active" id="extPeriodToday" onclick="setExtremesPeriod('today')" style="padding:6px 14px;font-size:12.5px;font-weight:700">📅 Today's Readings</button>
+      <button type="button" class="secondary tab-btn" id="extPeriodWeek" onclick="setExtremesPeriod('week')" style="padding:6px 14px;font-size:12.5px;font-weight:700">📊 This Week (Mon – Sun)</button>
+      <button type="button" class="secondary tab-btn" id="extPeriodMonth" onclick="setExtremesPeriod('month')" style="padding:6px 14px;font-size:12.5px;font-weight:700">🗓️ This Month</button>
+    </div>
+    <div style="font-size:12.5px;color:#334155;font-weight:600" id="extPeriodLabel">
+      Period: <b>Today's Readings</b>
     </div>
   </div>
 
-  <h3 style="margin-top:24px">Room-by-Room Highest &amp; Lowest Temperature History</h3>
-  <div class="tablewrap">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Room / Area</th>
-          <th>Standard</th>
-          <th>Today's Range</th>
-          <th>This Week's Range</th>
-          <th>This Month's Range</th>
-          <th>Latest Reading</th>
-        </tr>
-      </thead>
-      <tbody id="extremesTableBody"></tbody>
-    </table>
-  </div>
+  <div class="hl-grid-all" id="extremesRoomGrid"></div>
  </section>
 
  <footer>May Harvest Corporation • Hourly Room Temperature Monitoring System • Real-Time Cloud Sync</footer>
@@ -2061,7 +2060,22 @@ function showTab(tab){
  else if(tab==="extremes"){updateTemperatureExtremes()}
 }
 
+let currentExtPeriod = 'today';
+
+function setExtremesPeriod(period){
+  currentExtPeriod = period;
+  const pToday = $("extPeriodToday");
+  const pWeek = $("extPeriodWeek");
+  const pMonth = $("extPeriodMonth");
+  if(pToday) pToday.className = period === 'today' ? 'tab-btn active' : 'secondary tab-btn';
+  if(pWeek) pWeek.className = period === 'week' ? 'tab-btn active' : 'secondary tab-btn';
+  if(pMonth) pMonth.className = period === 'month' ? 'tab-btn active' : 'secondary tab-btn';
+  updateTemperatureExtremes();
+}
+
 function updateTemperatureExtremes(){
+  const grid = $("extremesRoomGrid");
+  if(!grid) return;
   const today = currentStamp().date;
 
   function parseLocalDate(dStr){
@@ -2089,6 +2103,18 @@ function updateTemperatureExtremes(){
   const currentWeek = getWeekRangeForDate(today);
   const currentMonth = today.slice(0, 7);
 
+  const pLabel = $("extPeriodLabel");
+  if(pLabel){
+    if(currentExtPeriod === 'today'){
+      pLabel.innerHTML = `Showing Highest &amp; Lowest for all 16 rooms: <b>Today (${fmtD(today)})</b>`;
+    } else if(currentExtPeriod === 'week'){
+      pLabel.innerHTML = `Showing Highest &amp; Lowest for all 16 rooms: <b>This Week (${fmtS(currentWeek.start)} – ${fmtS(currentWeek.end)}, ${today.slice(0,4)})</b>`;
+    } else {
+      const monthName = new Date(today + "T00:00:00").toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      pLabel.innerHTML = `Showing Highest &amp; Lowest for all 16 rooms: <b>This Month (${monthName})</b>`;
+    }
+  }
+
   const numRecords = data.filter(r => {
     if(r.temp === "N/A" || r.temp === null || r.temp === undefined) return false;
     const val = Number(r.temp);
@@ -2113,97 +2139,78 @@ function updateTemperatureExtremes(){
     return { high, low, maxT, minT };
   }
 
-  // 1. Today's Extremes
-  const todayRecs = numRecords.filter(r => r.date === today);
-  const todayExtremes = getExtremes(todayRecs);
-  if(todayExtremes){
-    if($("dayHigh")) $("dayHigh").textContent = todayExtremes.maxT.toFixed(1) + "°C";
-    if($("dayHighMeta")) $("dayHighMeta").textContent = `${todayExtremes.high.area} • ${todayExtremes.high.time.slice(0,5)}`;
-    if($("dayLow")) $("dayLow").textContent = todayExtremes.minT.toFixed(1) + "°C";
-    if($("dayLowMeta")) $("dayLowMeta").textContent = `${todayExtremes.low.area} • ${todayExtremes.low.time.slice(0,5)}`;
-  } else {
-    if($("dayHigh")) $("dayHigh").textContent = "--";
-    if($("dayHighMeta")) $("dayHighMeta").textContent = "No numeric readings today";
-    if($("dayLow")) $("dayLow").textContent = "--";
-    if($("dayLowMeta")) $("dayLowMeta").textContent = "No numeric readings today";
-  }
+  grid.innerHTML = areas.map((a, i) => {
+    const areaName = a[0];
+    const areaStd = a[3];
 
-  // 2. This Week's Extremes
-  const weekRecs = numRecords.filter(r => r.date >= currentWeek.start && r.date <= currentWeek.end);
-  const weekExtremes = getExtremes(weekRecs);
-  if(weekExtremes){
-    if($("weekHigh")) $("weekHigh").textContent = weekExtremes.maxT.toFixed(1) + "°C";
-    if($("weekHighMeta")) $("weekHighMeta").textContent = `${weekExtremes.high.area} • ${weekExtremes.high.date} ${weekExtremes.high.time.slice(0,5)}`;
-    if($("weekLow")) $("weekLow").textContent = weekExtremes.minT.toFixed(1) + "°C";
-    if($("weekLowMeta")) $("weekLowMeta").textContent = `${weekExtremes.low.area} • ${weekExtremes.low.date} ${weekExtremes.low.time.slice(0,5)}`;
-  } else {
-    if($("weekHigh")) $("weekHigh").textContent = "--";
-    if($("weekHighMeta")) $("weekHighMeta").textContent = "No numeric readings this week";
-    if($("weekLow")) $("weekLow").textContent = "--";
-    if($("weekLowMeta")) $("weekLowMeta").textContent = "No numeric readings this week";
-  }
-
-  // 3. This Month's Extremes
-  const monthRecs = numRecords.filter(r => r.date && r.date.startsWith(currentMonth));
-  const monthExtremes = getExtremes(monthRecs);
-  if(monthExtremes){
-    if($("monthHigh")) $("monthHigh").textContent = monthExtremes.maxT.toFixed(1) + "°C";
-    if($("monthHighMeta")) $("monthHighMeta").textContent = `${monthExtremes.high.area} • ${monthExtremes.high.date}`;
-    if($("monthLow")) $("monthLow").textContent = monthExtremes.minT.toFixed(1) + "°C";
-    if($("monthLowMeta")) $("monthLowMeta").textContent = `${monthExtremes.low.area} • ${monthExtremes.low.date}`;
-  } else {
-    if($("monthHigh")) $("monthHigh").textContent = "--";
-    if($("monthHighMeta")) $("monthHighMeta").textContent = "No numeric readings this month";
-    if($("monthLow")) $("monthLow").textContent = "--";
-    if($("monthLowMeta")) $("monthLowMeta").textContent = "No numeric readings this month";
-  }
-
-  // 4. Room-by-room History Table
-  const tbody = $("extremesTableBody");
-  if(tbody){
-    function formatRange(minT, maxT){
-      if(minT === null || minT === undefined) return '<span style="color:#94a3b8">—</span>';
-      if(minT === maxT) return `<b>${minT.toFixed(1)}°C</b>`;
-      return `<span style="color:#1d4ed8;font-weight:700">${minT.toFixed(1)}°C</span> <span style="color:#64748b">to</span> <span style="color:#b91c1c;font-weight:700">${maxT.toFixed(1)}°C</span>`;
+    const roomNum = numRecords.filter(r => r.area === areaName);
+    let targetRecs = [];
+    if(currentExtPeriod === 'today'){
+      targetRecs = roomNum.filter(r => r.date === today);
+    } else if(currentExtPeriod === 'week'){
+      targetRecs = roomNum.filter(r => r.date >= currentWeek.start && r.date <= currentWeek.end);
+    } else {
+      targetRecs = roomNum.filter(r => r.date && r.date.startsWith(currentMonth));
     }
 
-    tbody.innerHTML = areas.map((a, i) => {
-      const areaName = a[0];
-      const areaStd = a[3];
+    const ext = getExtremes(targetRecs);
+    const latest = data.filter(r => r.area === areaName).sort(sortByDateTimeDesc)[0];
 
-      const roomNum = numRecords.filter(r => r.area === areaName);
-      const roomToday = roomNum.filter(r => r.date === today);
-      const roomWeek = roomNum.filter(r => r.date >= currentWeek.start && r.date <= currentWeek.end);
-      const roomMonth = roomNum.filter(r => r.date && r.date.startsWith(currentMonth));
+    let hasDev = false;
+    let highVal = "--", highMeta = "No readings recorded";
+    let lowVal = "--", lowMeta = "No readings recorded";
+    let statusBadge = '<span class="status neutral">No Data</span>';
 
-      const extToday = getExtremes(roomToday);
-      const extWeek = getExtremes(roomWeek);
-      const extMonth = getExtremes(roomMonth);
+    if(ext){
+      const maxOk = isCompliant(areaName, ext.maxT);
+      const minOk = isCompliant(areaName, ext.minT);
+      hasDev = !maxOk || !minOk;
 
-      const todayRange = extToday ? formatRange(extToday.minT, extToday.maxT) : '<span style="color:#94a3b8">—</span>';
-      const weekRange = extWeek ? formatRange(extWeek.minT, extWeek.maxT) : '<span style="color:#94a3b8">—</span>';
-      const monthRange = extMonth ? formatRange(extMonth.minT, extMonth.maxT) : '<span style="color:#94a3b8">—</span>';
+      highVal = ext.maxT.toFixed(1) + "°C";
+      highMeta = `${esc(ext.high.time ? ext.high.time.slice(0,5) : "")} • ${esc(ext.high.date)} ${!maxOk ? '<b style="color:#dc2626">(Deviation)</b>' : '• Compliant'}`;
 
-      const latest = data.filter(r => r.area === areaName).sort(sortByDateTimeDesc)[0];
-      let latestHtml = '<span style="color:#94a3b8">—</span>';
-      if(latest){
-        const isNA = latest.temp === "N/A" || String(latest.assessment).includes("N/A");
-        const tDisplay = isNA ? '<b style="color:#64748b">N/A</b>' : `<b>${Number(latest.temp).toFixed(1)}°C</b>`;
-        const statBadge = badge(latest.assessment);
-        latestHtml = `<div>${tDisplay} <small>(${esc(latest.date)} ${esc(latest.time ? latest.time.slice(0,5) : "")})</small> ${statBadge}</div>`;
-      }
+      lowVal = ext.minT.toFixed(1) + "°C";
+      lowMeta = `${esc(ext.low.time ? ext.low.time.slice(0,5) : "")} • ${esc(ext.low.date)} ${!minOk ? '<b style="color:#dc2626">(Deviation)</b>' : '• Compliant'}`;
 
-      return `<tr>
-        <td>${i+1}</td>
-        <td><b>${esc(areaName)}</b></td>
-        <td>${esc(areaStd)}</td>
-        <td>${todayRange}</td>
-        <td>${weekRange}</td>
-        <td>${monthRange}</td>
-        <td>${latestHtml}</td>
-      </tr>`;
-    }).join("");
-  }
+      statusBadge = hasDev ? '<span class="status bad">Deviation</span>' : '<span class="status ok">Within Standard</span>';
+    }
+
+    let latestStr = "No reading";
+    if(latest){
+      const isNA = latest.temp === "N/A" || String(latest.assessment).includes("N/A");
+      const tVal = isNA ? "N/A" : Number(latest.temp).toFixed(1) + "°C";
+      latestStr = `Latest: <b>${tVal}</b> (${esc(latest.date)} ${esc(latest.time ? latest.time.slice(0,5) : "")})`;
+    }
+
+    return `
+      <div class="hl-room-card ${hasDev ? 'has-dev' : ''}">
+        <div class="hl-room-head">
+          <div>
+            <div class="hl-room-title">${i+1}. ${esc(areaName)}</div>
+            <div class="hl-room-std">Standard: ${esc(areaStd)}</div>
+          </div>
+          <div>${statusBadge}</div>
+        </div>
+
+        <div class="hl-stat high">
+          <div class="hl-label">🔺 Highest (Max)</div>
+          <div class="hl-val" style="color:${ext && !isCompliant(areaName, ext.maxT) ? '#dc2626' : '#0f172a'}">${highVal}</div>
+          <div class="hl-meta">${highMeta}</div>
+        </div>
+
+        <div class="hl-stat low">
+          <div class="hl-label">🔻 Lowest (Min)</div>
+          <div class="hl-val" style="color:${ext && !isCompliant(areaName, ext.minT) ? '#dc2626' : '#0f172a'}">${lowVal}</div>
+          <div class="hl-meta">${lowMeta}</div>
+        </div>
+
+        <div class="hl-room-foot">
+          <span>${latestStr}</span>
+          <span style="font-weight:600">${targetRecs.length} reading(s)</span>
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 function badge(st){
  let displaySt = st;
