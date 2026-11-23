@@ -1210,6 +1210,7 @@ const areas=[
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pad=n=>String(n).padStart(2,"0");
+const sortByDateTimeDesc = (a, b) => ((b.date || "") + " " + (b.time || "")).localeCompare((a.date || "") + " " + (a.time || "")) || ((b.id || 0) - (a.id || 0));
 
 function toast(msg){
   const el=$("toastMsg");
@@ -2157,7 +2158,7 @@ function updateTemperatureExtremes(){
       const weekRange = extWeek ? formatRange(extWeek.minT, extWeek.maxT) : '<span style="color:#94a3b8">—</span>';
       const monthRange = extMonth ? formatRange(extMonth.minT, extMonth.maxT) : '<span style="color:#94a3b8">—</span>';
 
-      const latest = data.filter(r => r.area === areaName).sort((x, y) => y.id - x.id)[0];
+      const latest = data.filter(r => r.area === areaName).sort(sortByDateTimeDesc)[0];
       let latestHtml = '<span style="color:#94a3b8">—</span>';
       if(latest){
         const isNA = latest.temp === "N/A" || String(latest.assessment).includes("N/A");
@@ -2207,7 +2208,7 @@ function render(){
   }
   if(q&&!(r.monitor.toLowerCase().includes(q)||String(r.thermo||"").toLowerCase().includes(q)||r.area.toLowerCase().includes(q)))return false;
   return true;
- }).sort((a,b)=>b.id-a.id);
+ }).sort(sortByDateTimeDesc);
 
  $("recordsBody").innerHTML=rows.map(r=>{
   let cc=cdata.filter(x=>String(x.linkedId)===String(r.id)).sort((a,b)=>b.id-a.id)[0];
@@ -2276,7 +2277,7 @@ function removeCounterSig(d,i){
 $("tolText").textContent="±"+COUNTER_TOL.toFixed(1)+"°C";
 personnel.forEach(p=>$("cPeople").appendChild(new Option(p,p)));
 
-const latestMon=area=>data.filter(r=>r.area===area).sort((a,b)=>b.id-a.id)[0];
+const latestMon=area=>data.filter(r=>r.area===area).sort(sortByDateTimeDesc)[0];
 const crl={state:[]};
 function buildCounterRooms(){
  $("cRoomRows").innerHTML=areas.map((a,i)=>`<div class="rl-row crl-row" id="crl${i}"><div class="rl-no">${i+1}</div><div class="rl-room">${esc(a[0])}</div><div class="rl-std">${esc(a[3])}</div><div class="rl-mon" id="crm${i}"></div><div class="rl-temp"><div class="tempbox"><button type="button" class="signbtn" id="crb${i}" data-i="${i}" tabindex="-1" title="Switch between negative and positive" aria-label="Toggle minus sign">&plusmn;</button><input class="tin" id="ctin${i}" data-i="${i}" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter temp" aria-label="Counter check temperature for ${esc(a[0])}"></div></div><div class="rl-time" id="crt${i}"><b></b><small></small></div><div class="rl-stat" id="crs${i}"></div><div class="rl-rem hidden" id="crr${i}"><input id="crri${i}" placeholder="Remarks / action taken (out of standard or discrepancy)"></div></div>`).join("");
